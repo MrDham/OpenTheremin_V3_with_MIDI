@@ -47,13 +47,15 @@ There is two calibration mode:
          
  2. If REGISTER POT turned clockwise at entering in calibration mode 
          -> Records midi settings as per pot position BEFORE entering in calibration mode:
-         
-  . VOLUME POT : sets volume trigger level
-  . PITCH POT : sets pitch bend range (1, 7, 12 or 24 semitones)
-  . TIMBRE POT : sets Channel. In the absence of graduation, timbre variation may help 
+           
+		VOLUME POT : sets volume trigger level
+  
+		PITCH POT : sets pitch bend range (1, 7, 12 or 24 semitones)
+  
+		TIMBRE POT : sets Channel. In the absence of graduation, timbre variation may help 
                (Wave Form 1 low = CH1, WF 1 High = CH2, WF 2 Low = CH3, etc...)
                
-#MUTE BUTTON: 
+MUTE BUTTON: 
 Sends ALL NOTE OFF on selected channel and stay in mute until it's pushed again.  
 
 
