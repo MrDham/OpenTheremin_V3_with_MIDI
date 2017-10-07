@@ -59,6 +59,8 @@ There is two calibration mode:
 MUTE BUTTON: 
 Sends ALL NOTE OFF on selected channel and stay in mute until it's pushed again.  
 
+AUDIO: 
+Audio processing from antennas to output jack, including pots, LEDs and button functions, is exactly the same in open theremin V3.  
 
 
 
