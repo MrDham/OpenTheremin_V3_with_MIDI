@@ -42,15 +42,15 @@ The trigger volume can be configured so as we have some volume at note attack on
 
 CONFIGURATION: 
 There is two calibration mode: 
-1. If REGISTER POT turned counter clockwise at entering in calibration mode 
+ 1. If REGISTER POT turned counter clockwise at entering in calibration mode 
          -> Runs normal calibration of antennas.
          
-2. If REGISTER POT turned clockwise at entering in calibration mode 
+ 2. If REGISTER POT turned clockwise at entering in calibration mode 
          -> Records midi settings as per pot position BEFORE entering in calibration mode:
          
-  VOLUME POT : sets volume trigger level
-  PITCH POT : sets pitch bend range (1, 7, 12 or 24 semitones)
-  TIMBRE POT : sets Channel. In the absence of graduation, timbre variation may help 
+  . VOLUME POT : sets volume trigger level
+  . PITCH POT : sets pitch bend range (1, 7, 12 or 24 semitones)
+  . TIMBRE POT : sets Channel. In the absence of graduation, timbre variation may help 
                (Wave Form 1 low = CH1, WF 1 High = CH2, WF 2 Low = CH3, etc...)
                
 #MUTE BUTTON: 
