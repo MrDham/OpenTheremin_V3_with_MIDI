@@ -31,8 +31,8 @@ Serial port is used to send midi messages now.
 
 ### How does it works ? 
 
-Take care of selecting MIDI mode that correponds to your cituation 
-	(put "//" in front off unadequate line - MIDI through serial is selected by default ):
+In "Application.cpp", take care of selecting MIDI mode that correponds to your cituation 
+	(put "//" in front off inadequate line - MIDI through serial is selected by default here):
 
   Serial.begin(115200); // Baudrate for midi to serial. Use a serial to midi router 
   	http://projectgus.github.com/hairless-midiserial/
