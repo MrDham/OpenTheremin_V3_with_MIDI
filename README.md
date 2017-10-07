@@ -63,6 +63,8 @@ Sends ALL NOTE OFF on selected channel and stay in mute until it's pushed again.
 
 ### LICENSE
 Original project written by Urs Gaudenz, GaudiLabs, 2016
+
 GNU license, check LICENSE file for more information
+
 All text above must be included in any redistribution
 
