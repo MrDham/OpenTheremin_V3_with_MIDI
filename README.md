@@ -23,7 +23,7 @@ http://www.gaudi.ch/OpenTheremin/
 5. Upload the code by clicking on the upload button.
 
 ### Added and removed compare to Open Theremin V3. 
-Serial communication implemented for programm monitoring purpose was removed (Particularly during calibration).
+Serial communication implemented for program monitoring purpose was removed (Particularly during calibration).
 If you need to monitor calibration for antenna problem fixing, please use original master branch from 
 https://github.com/GaudiLabs/OpenTheremin_V3. 
 
