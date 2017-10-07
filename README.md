@@ -30,6 +30,20 @@ https://github.com/GaudiLabs/OpenTheremin_V3.
 Serial port is used to send midi messages now. 
 
 ### How does it works ? 
+
+Take care of selecting MIDI mode that correponds to your cituation 
+	(put "//" in front off unadequate line - MIDI through serial is selected by default ):
+
+  Serial.begin(115200); // Baudrate for midi to serial. Use a serial to midi router 
+  	http://projectgus.github.com/hairless-midiserial/
+  
+  //Serial.begin(31250); // Baudrate for real midi. Use din connection 
+  	https://www.arduino.cc/en/Tutorial/Midi or HIDUINO https://github.com/ddiakopoulos/hiduino
+
+I tested "Hiduino" and "midi to serial" modes, both are OK.
+
+
+
 PITCH : 
 It uses first note detected at volume rise to generate a NOTEON. 
 Then it uses PITCHBEND to reach pitch as long as pitch bend range will do. 
