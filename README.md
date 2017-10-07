@@ -31,9 +31,13 @@ Serial port is used to send midi messages now.
 ### How does it works ? 
 PITCH : 
 It uses first note detected at volume rise to generate a NOTEON. 
+
 Then it uses PITCHBEND to reach pitch as long as pitch bend range will do. 
+
 Beyond it generates a new NOTEON  followed by a NOTEOFF for the previous note (legato). 
+
 Pitch bend range can be configured (1, 7, 12 or 24 semitones)
+
 One exception is that I desactivated pitch bend in 1 semitone mode because portamento does a better job then. 
 
 VOLUME: 
