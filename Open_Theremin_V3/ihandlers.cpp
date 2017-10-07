@@ -163,6 +163,7 @@ ISR (INT1_vect) {
 
 #endif                          //CV play sound
   incrementTimer();               // update 32us timer
+  incrementMidiTimer();           // update 32us miditimer
 
   if (PC_STATE) debounce_p++;
   if (debounce_p == 3) {

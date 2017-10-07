@@ -24,15 +24,22 @@ static float qMeasurement = 0;
 
 static int32_t volCalibrationBase   = 0;
 
+static uint16_t old_midi_note =0;
+static uint16_t old_midi_volume =0;
+static uint16_t old_midi_bend = 0;
+
+static double midi_key_follow = 0.5;
+static uint8_t midi_channel = 0;
+static uint8_t midi_bend_range = 0;
+static uint8_t midi_volume_trigger = 0;
+ 
+
 Application::Application()
   : _state(PLAYING),
     _mode(NORMAL) {
 };
 
 void Application::setup() {
-#if SERIAL_ENABLED
-  Serial.begin(Application::BAUD);
-#endif
 
   HW_LED1_ON;HW_LED2_OFF;
 
@@ -58,7 +65,7 @@ initialiseInterrupts();
   EEPROM.get(4,pitchCalibrationBase);
   EEPROM.get(8,volCalibrationBase);
  
-
+ midi_setup();
 
 }
 
@@ -181,62 +188,73 @@ void Application::loop() {
   vWavetableSelector=wavePotValueL>>7;
   registerValue=4-(registerPotValueL>>8);  
 
-  if (_state == PLAYING && HW_BUTTON_PRESSED) {
+  if (_state == PLAYING && HW_BUTTON_PRESSED) 
+  {
     _state = CALIBRATING;
+    _midistate = MIDI_STOP;
+
     resetTimer();
   }
 
-  if (_state == CALIBRATING && HW_BUTTON_RELEASED) {
-    if (timerExpired(1500)) {
-     
+  if (_state == CALIBRATING && HW_BUTTON_RELEASED) 
+  {
+    if (timerExpired(1500)) 
+    {
          _mode = nextMode();
- if (_mode==NORMAL) {HW_LED1_ON;HW_LED2_OFF;} else {HW_LED1_OFF;HW_LED2_ON;};
-   // playModeSettingSound();
-   
-   
+         if (_mode==NORMAL) 
+         {
+          HW_LED1_ON;HW_LED2_OFF;
+          _midistate = MIDI_SILENT;
+         } 
+         else 
+         {
+          HW_LED1_OFF;HW_LED2_ON;
+         };
+         // playModeSettingSound();
     }
     _state = PLAYING;
   };
 
-  if (_state == CALIBRATING && timerExpired(15000)) {
-
-      HW_LED2_ON;
+  if (_state == CALIBRATING && timerExpired(15000)) 
+  {
+    HW_LED2_ON;
       
-  playStartupSound();
-  
-   calibrate_pitch();
-   calibrate_volume();
+    playStartupSound();
+
+    if (registerPotValue < 512) // if register pot turned CCW 
+    {
+      // calibrate heterodyne parameters
+      calibrate_pitch();
+      calibrate_volume();
 
 
-   initialiseTimer();
-   initialiseInterrupts();
+      initialiseTimer();
+      initialiseInterrupts();
    
-  playCalibratingCountdownSound();
-  calibrate();
+      playCalibratingCountdownSound();
+      calibrate();
+    }
+    else // if register turned CW 
+    {
+      // calibrate midi parameters
+      midi_calibrate ();
+    };
   
-  
-      
-      
-
-      _mode=NORMAL;
-      HW_LED2_OFF;
+    _mode=NORMAL;
+    HW_LED2_OFF;
       
     while (HW_BUTTON_PRESSED)
       ; // NOP
+    
     _state = PLAYING;
+    _midistate = MIDI_SILENT;
   };
 
 #if CV_ENABLED
   OCR0A = pitch & 0xff;
 #endif
 
-#if SERIAL_ENABLED
-  if (timerExpired(TICKS_100_MILLIS)) {
-    resetTimer();
-    Serial.write(pitch & 0xff);              // Send char on serial (if used)
-    Serial.write((pitch >> 8) & 0xff);
-  }
-#endif
+
 
   if (pitchValueAvailable) {                        // If capture event
 
@@ -281,6 +299,12 @@ void Application::loop() {
     volumeValueAvailable = false;
   }
 
+  if (midi_timer > 100) // run midi app every 100 ticks equivalent to approximatevely 3 ms to avoid synth's overload
+  {
+    midi_application ();
+    midi_timer = 0; 
+  }
+
   goto mloop;                           // End of main loop
 }
 
@@ -319,8 +343,6 @@ static long pitchfn0 = 0;
 static long pitchfn1 = 0;
 static long pitchfn = 0;
 
-  Serial.begin(115200);
-  Serial.println("\nPITCH CALIBRATION\n");
 
   HW_LED1_OFF;
   HW_LED2_ON;
@@ -330,8 +352,6 @@ static long pitchfn = 0;
   mcpDacInit();
 
   qMeasurement = GetQMeasurement();  // Measure Arudino clock frequency 
-  Serial.print("Arudino Freq: ");
-  Serial.println(qMeasurement);
 
 q0 = (16000000/qMeasurement*500000);  //Calculated set frequency based on Arudino clock frequency
 
@@ -340,8 +360,6 @@ pitchXn1 = 4095;
 
 pitchfn = q0-PitchFreqOffset;        // Add offset calue to set frequency
 
-Serial.print("\nPitch Set Frequency: ");
-Serial.println(pitchfn);
 
 
 mcpDac2BSend(1600);
@@ -354,11 +372,6 @@ mcpDac2ASend(pitchXn1);
 delay(100);
 pitchfn1 = GetPitchMeasurement();
 
-Serial.print ("Frequency tuning range: ");
-Serial.print(pitchfn0);
-Serial.print(" to ");
-Serial.println(pitchfn1);
-  
  
 while(abs(pitchfn0-pitchfn1)>CalibrationTolerance){      // max allowed pitch frequency offset
 
@@ -372,14 +385,6 @@ pitchfn1 = GetPitchMeasurement()-pitchfn;
 
 pitchXn2=pitchXn1-((pitchXn1-pitchXn0)*pitchfn1)/(pitchfn1-pitchfn0); // new DAC value
 
-Serial.print("\nDAC value L: ");
-Serial.print(pitchXn0);
-Serial.print(" Freq L: ");
-Serial.println(pitchfn0);
-Serial.print("DAC value H: ");
-Serial.print(pitchXn1);
-Serial.print(" Freq H: ");
-Serial.println(pitchfn1);
 
 
 pitchXn0 = pitchXn1;
@@ -406,8 +411,6 @@ static long volumefn0 = 0;
 static long volumefn1 = 0;
 static long volumefn = 0;
 
-    Serial.begin(115200);
-    Serial.println("\nVOLUME CALIBRATION");
     
   InitialiseVolumeMeasurement();
   interrupts();
@@ -420,8 +423,6 @@ volumeXn1 = 4095;
 q0 = (16000000/qMeasurement*460765);
 volumefn = q0-VolumeFreqOffset;
 
-Serial.print("\nVolume Set Frequency: ");
-Serial.println(volumefn);
 
 
 mcpDac2BSend(volumeXn0);
@@ -434,11 +435,6 @@ mcpDac2BSend(volumeXn1);
 delay_NOP(44316);//44316=100ms
 volumefn1 = GetVolumeMeasurement();
 
-
-Serial.print ("Frequency tuning range: ");
-Serial.print(volumefn0);
-Serial.print(" to ");
-Serial.println(volumefn1);
 
 
 while(abs(volumefn0-volumefn1)>CalibrationTolerance){
@@ -453,14 +449,6 @@ volumefn1 = GetVolumeMeasurement()-volumefn;
 
 volumeXn2=volumeXn1-((volumeXn1-volumeXn0)*volumefn1)/(volumefn1-volumefn0); // calculate new DAC value
 
-Serial.print("\nDAC value L: ");
-Serial.print(volumeXn0);
-Serial.print(" Freq L: ");
-Serial.println(volumefn0);
-Serial.print("DAC value H: ");
-Serial.print(volumeXn1);
-Serial.print(" Freq H: ");
-Serial.println(volumefn1);
 
 
 volumeXn0 = volumeXn1;
@@ -474,7 +462,6 @@ EEPROM.put(2,volumeXn0);
   HW_LED2_OFF;
   HW_LED1_ON;
 
-  Serial.println("\nCALIBRATION COMPTLETED\n");
 }
 
 void Application::hzToAddVal(float hz) {
@@ -514,5 +501,248 @@ void Application::delay_NOP(unsigned long time) {
 }
 
 
+
+void Application::midi_setup() 
+{
+
+  EEPROM.get(12,midi_channel);
+  EEPROM.get(13,midi_bend_range);
+  EEPROM.get(14,midi_volume_trigger);
+
+  // Set MIDI baud rate:
+  Serial.begin(115200); // Baudrate for midi to serial. Use a serial to midi router http://projectgus.github.com/hairless-midiserial/
+  //Serial.begin(31250); // Baudrate for real midi. Use din connection https://www.arduino.cc/en/Tutorial/Midi or HIDUINO https://github.com/ddiakopoulos/hiduino
+
+  _midistate = MIDI_SILENT; 
+}
+
+
+void Application::midi_msg_send(uint8_t channel, uint8_t midi_cmd1, uint8_t midi_cmd2, uint8_t midi_value) 
+{
+  uint8_t mixed_cmd1_channel; 
+
+  mixed_cmd1_channel = (midi_cmd1 & 0xF0)| (channel & 0x0F);
+  
+  Serial.write(mixed_cmd1_channel);
+  Serial.write(midi_cmd2);
+  Serial.write(midi_value);
+}
+
+// midi_application sends note and volume and uses pitch bend to simulate continuous picth. 
+// Calibrate pitch bend and other parameters accordingly to the receiver synth (see midi_calibrate). 
+// New notes won't be generated as long as pitch bend will do the job. 
+// The bigger is synth's pitch bend range the beter is the effect.  
+// If pitch bend range = 1 no picth bend is generated (portamento will do a better job)
+void Application::midi_application ()
+{
+  uint16_t new_midi_note;
+  uint16_t new_midi_volume; 
+  
+  uint16_t new_midi_bend;
+  uint8_t midi_bend_low; 
+  uint8_t midi_bend_high;
+    
+  double double_log_freq;
+  double double_log_bend;
+
+  // Calculate volume for midi 
+  new_midi_volume = vScaledVolume >> 1; 
+  new_midi_volume = min (new_midi_volume, 127);
+
+  // Calculate note and pitch bend for midi 
+  if (vPointerIncrement < 18) 
+  {
+    // Highest note
+    new_midi_note = 0; 
+    new_midi_bend = 8192;
+  }
+  else if (vPointerIncrement > 26315) 
+  {
+    // Lowest note
+    new_midi_note = 127; 
+    new_midi_bend = 8192;
+  }
+  else
+  {
+    // Find note in the playing range
+    double_log_freq = (log (vPointerIncrement/17.152) / 0.057762265); // Precise note played in the logaritmic scale
+    double_log_bend = double_log_freq - old_midi_note; // How far from last played midi chromatic note we are
+
+    // If too much far from last midi chromatic note played (midi_key_follow depends on pitch bend range)
+    if (abs (double_log_bend) >= midi_key_follow)
+    {
+      new_midi_note = round (double_log_freq);  // Select the new midi chromatic note 
+      double_log_bend = double_log_freq - new_midi_note; // calculate bend to reach precise note played
+    }
+    else
+    {
+       new_midi_note = old_midi_note; // No change 
+    }
+
+    // If pitch bend range greater than 1 
+    if (midi_bend_range > 1)
+    {
+      // use it to reach precise note played
+      new_midi_bend = 8192 + (8191 * double_log_bend / midi_bend_range); // Calculate midi pitch bend
+    }
+    else
+    {
+      // Don't use pitch bend (portamento would do a beter job)
+      new_midi_bend = 8192; 
+    }
+  }
+
+  // Prepare the 2 bites of picth bend midi message
+  midi_bend_low = (int8_t) (new_midi_bend & 0x007F);
+  midi_bend_high = (int8_t) ((new_midi_bend & 0x3F80)>> 7);
+  
+  // State machine for MIDI
+  switch (_midistate)
+  {
+  case MIDI_SILENT:  
+    // If player's hand moves away from volume antenna
+    if (new_midi_volume > midi_volume_trigger)
+    {
+      // Send pitch bend to reach precise played note (send 8192 (no pitch bend) in case of midi_bend_range == 1)
+      midi_msg_send(midi_channel, 0xE0, midi_bend_low, midi_bend_high);
+      old_midi_bend = new_midi_bend;
+      
+      // Send volume to reach precise played volume
+      midi_msg_send(midi_channel, 0xB0, 0x07, new_midi_volume);
+      old_midi_volume = new_midi_volume;
+
+      // Play the note
+      midi_msg_send(midi_channel, 0x90, new_midi_note, 0x45);
+      old_midi_note = new_midi_note;
+
+      // Set key follow so as next played note will be at limit of pitch bend range
+      midi_key_follow = (double)(midi_bend_range) - 0.5;
+
+      _midistate = MIDI_PLAYING;
+    }
+    else
+    {
+      // Do nothing
+    }
+    break; 
+  
+  case MIDI_PLAYING:  
+    // If player's hand is far from volume antenna
+    if (new_midi_volume > midi_volume_trigger)
+    {
+      // Refresh midi pitch bend value
+      if (new_midi_bend != old_midi_bend)
+      {
+        midi_msg_send(midi_channel, 0xE0, midi_bend_low, midi_bend_high);   
+        old_midi_bend = new_midi_bend;
+      }
+      else
+      {
+        // do nothing
+      } 
+      
+      // Refresh midi volume value
+      if (new_midi_volume != old_midi_volume)
+      {
+        midi_msg_send(midi_channel, 0xB0, 0x07, new_midi_volume);
+        old_midi_volume = new_midi_volume;
+      }
+      else
+      {
+        // do nothing
+      }
+
+      // Refresh midi note
+      if (new_midi_note != old_midi_note) 
+      {
+        // Play new note before muting old one to play legato on monophonic synth 
+        // (pitch pend management tends to break expected effect here)
+        midi_msg_send(midi_channel, 0x90, new_midi_note, 0x45);
+        midi_msg_send(midi_channel, 0x90, old_midi_note, 0);
+        old_midi_note = new_midi_note;
+      }
+      else 
+      {
+        // do nothing
+      } 
+    }
+    else // Means that player's hand moves to the volume antenna
+    {
+      // Send volume = 0
+      midi_msg_send(midi_channel, 0xB0, 0x07, 0);
+      old_midi_volume = 0;
+    
+      // Send note off
+      midi_msg_send(midi_channel, 0x90, old_midi_note, 0);
+
+      // Set key follow to the minimum in order to use closest note played as the center note for pitch bend next time
+      midi_key_follow = 0.5;
+      
+      _midistate = MIDI_SILENT;
+    }
+    break;
+    
+  case MIDI_STOP:
+    // Send all note off
+    midi_msg_send(midi_channel, 0xB0, 0x7B, 0x00);
+
+    _midistate = MIDI_MUTE;
+    break;
+
+  case MIDI_MUTE:
+    //do nothing
+    break;
+    
+  }
+}
+
+// midi_calibrate allows the user to set some midi parameters
+// Set potentiometer accordingly to comments bellow BEFORE entering in midi calibration mode. 
+// Hear may help somewhat to determine entered values
+void Application::midi_calibrate ()
+{
+  uint16_t pot_channel;
+  uint16_t pot_bend_range;
+  uint16_t pot_volume_trigger;
+
+  uint16_t bend_range_scale; 
+
+  // Midi channel uses "Timbre" pot. 
+  // Waveform may help user do determine which couple of channel is chosen (WF 1 Lo -> Ch1, WF 1 Hi -> Ch2, WF 2 Lo -> Ch3, etc...)
+  pot_channel = analogRead(WAVE_SELECT_POT);
+  midi_channel = (uint8_t)((pot_channel >> 6) & 0x000F);
+  EEPROM.put(12,midi_channel);
+  
+  
+  // Pitch bend range and associated distance between notes jumps use "Pitch" pot. 
+  // The user shall set synth's pitch bend range acordingly to the selected Theremin's pitch bend range:
+  // 1 semitone, 7 semitones (a fifth), 12 semitones (an octave) or 24 semitones (two octaves). 
+  // The "1 semitone" setting blocks pitch bend generation (use portamento on the synth)
+  pot_bend_range = analogRead(PITCH_POT);
+  bend_range_scale = pot_bend_range >> 8;
+  if (bend_range_scale == 0)
+  {
+    midi_bend_range = 1; 
+  }
+  else if (bend_range_scale == 1)
+  {
+    midi_bend_range = 7; 
+  }
+  else if (bend_range_scale == 2)
+  {
+    midi_bend_range = 12; 
+  }
+  else
+  {
+    midi_bend_range = 24; 
+  }
+  EEPROM.put(13,midi_bend_range);
+  
+  // Volume trigger uses "Volume" pot 
+  // Select a high value if some percussive sounds are played (so as it is heard when volume is not null)
+  pot_volume_trigger = analogRead(VOLUME_POT);
+  midi_volume_trigger = (uint8_t)((pot_volume_trigger >> 3) & 0x007F);
+  EEPROM.put(14,midi_volume_trigger);
+}
 
 
