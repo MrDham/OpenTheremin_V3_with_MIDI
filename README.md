@@ -25,7 +25,8 @@ http://www.gaudi.ch/OpenTheremin/
 ### Added and removed compare to Open Theremin V3. 
 Serial communication implemented for programm monitoring purpose was removed (Particularly during calibration).
 If you need to monitor calibration for antenna problem fixing, please use original master branch from 
-https://github.com/GaudiLabs/OpenTheremin_V3
+https://github.com/GaudiLabs/OpenTheremin_V3. 
+
 Serial port is used to send midi messages now. 
 
 ### How does it works ? 
@@ -63,7 +64,6 @@ Sends ALL NOTE OFF on selected channel and stay in mute until it's pushed again.
 
 ### LICENSE
 Original project written by Urs Gaudenz, GaudiLabs, 2016
-
 GNU license, check LICENSE file for more information
 
 All text above must be included in any redistribution
