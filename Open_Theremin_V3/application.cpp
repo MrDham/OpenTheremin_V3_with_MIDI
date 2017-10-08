@@ -600,8 +600,12 @@ void Application::midi_application ()
   switch (_midistate)
   {
   case MIDI_SILENT:  
-
-    // Always refresh midi volume value (synth sound could be in Release phase of ADSR)
+    // Synth sound could be in Release phase of ADSR or may have some delay or reverb effect so...
+    
+    // ... don't refresh pitch bend: 
+      // Instruction "midi_key_follow = 0.5;" and unrefreshed notes would make pitch bend verry messy. 
+    
+    // ... but always refresh midi volume value. 
     if (new_midi_volume != old_midi_volume)
     {
       midi_msg_send(midi_channel, 0xB0, 0x07, new_midi_volume);
@@ -679,10 +683,6 @@ void Application::midi_application ()
       // Send note off
       midi_msg_send(midi_channel, 0x90, old_midi_note, 0);
 
-      // Don't refresh pitch bend: 
-        // the following instruction "midi_key_follow = 0.5;" would make pitch bend verry messy
-        // and it simulates the impossibility of a vibrato on a mutted string (ok... theremin has no string)
-
       // Set key follow to the minimum in order to use closest note played as the center note for pitch bend next time
       midi_key_follow = 0.5;
       
@@ -693,6 +693,10 @@ void Application::midi_application ()
   case MIDI_STOP:
     // Send all note off
     midi_msg_send(midi_channel, 0xB0, 0x7B, 0x00);
+
+    // Mute long release notes
+    midi_msg_send(midi_channel, 0xB0, 0x07, 0);
+    old_midi_volume = 0;
 
     _midistate = MIDI_MUTE;
     break;
