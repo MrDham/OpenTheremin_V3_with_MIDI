@@ -600,6 +600,18 @@ void Application::midi_application ()
   switch (_midistate)
   {
   case MIDI_SILENT:  
+
+    // Always refresh midi volume value (synth sound could be in Release phase of ADSR)
+    if (new_midi_volume != old_midi_volume)
+    {
+      midi_msg_send(midi_channel, 0xB0, 0x07, new_midi_volume);
+      old_midi_volume = new_midi_volume;
+    }
+    else
+    {
+      // do nothing
+    }
+
     // If player's hand moves away from volume antenna
     if (new_midi_volume > midi_volume_trigger)
     {
@@ -607,10 +619,6 @@ void Application::midi_application ()
       midi_msg_send(midi_channel, 0xE0, midi_bend_low, midi_bend_high);
       old_midi_bend = new_midi_bend;
       
-      // Send volume to reach precise played volume
-      midi_msg_send(midi_channel, 0xB0, 0x07, new_midi_volume);
-      old_midi_volume = new_midi_volume;
-
       // Play the note
       midi_msg_send(midi_channel, 0x90, new_midi_note, 0x45);
       old_midi_note = new_midi_note;
@@ -627,6 +635,17 @@ void Application::midi_application ()
     break; 
   
   case MIDI_PLAYING:  
+    // Always refresh midi volume value
+    if (new_midi_volume != old_midi_volume)
+    {
+      midi_msg_send(midi_channel, 0xB0, 0x07, new_midi_volume);
+      old_midi_volume = new_midi_volume;
+    }
+    else
+    {
+      // do nothing
+    }
+
     // If player's hand is far from volume antenna
     if (new_midi_volume > midi_volume_trigger)
     {
@@ -641,17 +660,6 @@ void Application::midi_application ()
         // do nothing
       } 
       
-      // Refresh midi volume value
-      if (new_midi_volume != old_midi_volume)
-      {
-        midi_msg_send(midi_channel, 0xB0, 0x07, new_midi_volume);
-        old_midi_volume = new_midi_volume;
-      }
-      else
-      {
-        // do nothing
-      }
-
       // Refresh midi note
       if (new_midi_note != old_midi_note) 
       {
@@ -668,12 +676,12 @@ void Application::midi_application ()
     }
     else // Means that player's hand moves to the volume antenna
     {
-      // Send volume = 0
-      midi_msg_send(midi_channel, 0xB0, 0x07, 0);
-      old_midi_volume = 0;
-    
       // Send note off
       midi_msg_send(midi_channel, 0x90, old_midi_note, 0);
+
+      // Don't refresh pitch bend: 
+        // the following instruction "midi_key_follow = 0.5;" would make pitch bend verry messy
+        // and it simulates the impossibility of a vibrato on a mutted string (ok... theremin has no string)
 
       // Set key follow to the minimum in order to use closest note played as the center note for pitch bend next time
       midi_key_follow = 0.5;
