@@ -80,7 +80,9 @@ Audio processing from antennas to output jack, including pots, LEDs and button f
 
 ### LICENSE
 Original project written by Urs Gaudenz, GaudiLabs, 2016
-GNU license, check LICENSE file for more information
+GNU license. This Project inherit its 2016 GNU License. 
+
+ Check LICENSE file for more information
 
 All text above must be included in any redistribution
 
