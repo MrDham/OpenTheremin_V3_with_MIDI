@@ -74,13 +74,13 @@ MUTE BUTTON:
 Sends ALL NOTE OFF on selected channel and stay in mute until it's pushed again.  
 
 AUDIO: 
-Audio processing from antennas to output jack, including pots, LEDs and button functions, is exactly the same in open theremin V3.  
+Audio processing from antennas to output jack, including pots, LEDs and button functions, is exactly the same as in open theremin V3.  
 
 
 
 ### LICENSE
 Original project written by Urs Gaudenz, GaudiLabs, 2016
-GNU license. This Project inherit its 2016 GNU License. 
+GNU license. This Project inherits this 2016 GNU License. 
 
  Check LICENSE file for more information
 
