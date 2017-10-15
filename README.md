@@ -82,9 +82,9 @@ Set pitch bend range of the theremin with a high value (12 semitones or 24 semit
 
 Set pitch bend range of the synth with the same value
 
-Closest to theremin settings (pitch bend range = 24 semitones):
+Closest to real theremin settings (pitch bend range = 24 semitones):
 
-  1. Set pots like this: Volume = Min, Pitch = Max, Register = Max, Timbre = Midi.
+  1. Set pots like this: Volume = Min, Pitch = Max, Register = Max, Timbre = Midi channel.
 
   2. Push button for two seconds.
 
