@@ -84,13 +84,13 @@ Set pitch bend range of the synth with the same value
 
 Closest to theremin settings (pitch bend range = 24 semitones):
 
-  Set pots like this: Volume = Min, Pitch = Max, Register = Max, Timbre = Midi.
+  1. Set pots like this: Volume = Min, Pitch = Max, Register = Max, Timbre = Midi.
 
-  Push button for two seconds.
+  2. Push button for two seconds.
 
-  Then set pots as for audio (Example : Volume = Mid, Pitch = Mid, Register = Wanted octave, Timbre = any)
+  3. Then set pots as for audio (Example : Volume = Mid, Pitch = Mid, Register = Wanted octave, Timbre = any)
 
-  Play (you can mix synth and audio if you want)
+  4. Play (you can mix synth and audio if you want)
 
  
 
