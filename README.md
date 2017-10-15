@@ -76,7 +76,29 @@ Sends ALL NOTE OFF on selected channel and stay in mute until it's pushed again.
 AUDIO: 
 Audio processing from antennas to output jack, including pots, LEDs and button functions, is exactly the same as in open theremin V3.  
 
+###What can I do to get a theremin like glissando?
 
+Set pitch bend range of the theremin with a high value (12 semitones or 24 semitones).
+
+Set pitch bend range of the synth with the same value
+
+Closest to theremin settings (pitch bend range = 24 semitones):
+
+  Set pots like this: Volume = Min, Pitch = Max, Register = Max, Timbre = Midi.
+
+  Push button for two seconds.
+
+  Then set pots as for audio (Example : Volume = Mid, Pitch = Mid, Register = Wanted octave, Timbre = any)
+
+  Play (you can mix synth and audio if you want)
+
+ 
+
+###If I do not trigger with the volume hand it also seems to trigger a new tone with the pitch antenna. Guess this is how MIDI works.
+
+Yes, with settings above, if you trigger a note (with volume loop) and go in one direction (with pitch antenna) a new note will be triggered after two octaves.
+
+This is a limitation of midi. Maybe some synth can perform pitch bend on more that 2 octaves but none of mine does...
 
 ### LICENSE
 Original project written by Urs Gaudenz, GaudiLabs, 2016
