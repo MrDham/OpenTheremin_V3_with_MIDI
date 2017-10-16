@@ -48,11 +48,11 @@ PITCH :
 It uses first note detected at volume rise to generate a NOTEON. 
 Then it uses PITCHBEND to reach pitch as long as pitch bend range will do. 
 Beyond it generates a new NOTEON  followed by a NOTEOFF for the previous note (legato). 
-Pitch bend range can be configured (1, 7, 12 or 24 semitones).
+Pitch bend range can be configured (1, 7, 12 or 24 semitones) to align with synth's maximum capabilities.
 One exception is that I desactivated pitch bend in 1 semitone mode because portamento does a better job then. 
 
 VOLUME: 
-It generates VOLUME continuous controler, starting NOTEON and ending NOTE OFF (when playing stacato). 
+It generates VOLUME continuous controler, starting NOTEON and ending NOTE OFF (when playing staccato). 
 The trigger volume can be configured so as we have some volume at note attack on percussive sounds. 
 
 CONFIGURATION: 
@@ -65,7 +65,8 @@ There is two calibration mode:
            
 		VOLUME POT : sets volume trigger level
   
-		PITCH POT : sets pitch bend range (1, 7, 12 or 24 semitones)
+		PITCH POT : sets pitch bend range (1, 7, 12 or 24 semitones) 
+		Use exactly same pitch bend range on your synth. Maximum setting possible is recomended. 
   
 		TIMBRE POT : sets Channel. In the absence of graduation, timbre variation may help 
                (Wave Form 1 low = CH1, WF 1 High = CH2, WF 2 Low = CH3, etc...)
