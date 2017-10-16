@@ -18,19 +18,14 @@ http://www.gaudi.ch/OpenTheremin/
 ### Installation
 1. Open up the Arduino IDE
 2. Open the File "Open_Theremin_V3.ino"
-3. In "Application.cpp", take care of selecting MIDI mode that correponds to your cituation
+3. In "Application.cpp", take care of selecting MIDI mode that correponds to your cituation (put "//" in front off inadequate line - MIDI through serial is selected by default here):
 
-	(put "//" in front off inadequate line - MIDI through serial is selected by default here):
-
-   Serial.begin(115200); // Baudrate for midi to serial. Use a serial to midi router 
-   
-  	http://projectgus.github.com/hairless-midiserial/
+   Serial.begin(115200); // Baudrate for midi to serial. Use a serial to midi router http://projectgus.github.com/hairless-midiserial/
   
-   //Serial.begin(31250); // Baudrate for real midi. 
-   Use din connection https://www.arduino.cc/en/Tutorial/Midi 
-   or HIDUINO https://github.com/ddiakopoulos/hiduino
+   //Serial.begin(31250); // Baudrate for real midi. Use din connection https://www.arduino.cc/en/Tutorial/Midi or HIDUINO https://github.com/ddiakopoulos/hiduino
 
    I tested "Hiduino" and "midi to serial" modes, both are OK.
+   
 4. Selecting the correct usb port on Tools -> Serial Port
 5. Select the correct arduino board from Tools -> Board
 6. Upload the code by clicking on the upload button.
