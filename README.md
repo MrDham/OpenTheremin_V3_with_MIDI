@@ -3,6 +3,9 @@
 Based on Arduino UNO Software for the Open.Theremin version 3.0  Copyright (C) 2010-2016 by Urs Gaudenz
 https://github.com/GaudiLabs/OpenTheremin_V3
 
+Urs makes also a very clear presentation of this MIDI feature on his website (many thanks !):
+http://www.gaudi.ch/OpenTheremin/index.php?option=com_content&view=article&id=200&Itemid=121
+
 ### Don't click on the files!
 Click on the "Download ZIP" Button to the right or [Click here](https://github.com/GaudiLabs/OpenTheremin_V3/archive/master.zip) 
 Then unpack the archive.
@@ -39,10 +42,6 @@ Serial port is used to send midi messages now.
 
 ### How does it works ? 
 
-
-
-
-
 PITCH : 
 It uses first note detected at volume rise to generate a NOTEON. 
 Then it uses PITCHBEND to reach pitch as long as pitch bend range will do. 
@@ -75,6 +74,7 @@ Sends ALL NOTE OFF on selected channel and stay in mute until it's pushed again.
 
 AUDIO: 
 Audio processing from antennas to output jack, including pots, LEDs and button functions, is exactly the same as in open theremin V3.  
+
 
 ### What can I do to get a theremin like glissando?
 
