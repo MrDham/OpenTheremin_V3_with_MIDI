@@ -217,7 +217,8 @@ void Application::loop() {
 
   if (_state == CALIBRATING && timerExpired(15000)) 
   {
-    HW_LED2_ON;
+    HW_LED1_OFF; HW_LED2_ON;
+  
       
     playStartupSound();
 
@@ -241,7 +242,7 @@ void Application::loop() {
     };
   
     _mode=NORMAL;
-    HW_LED2_OFF;
+    HW_LED1_ON;HW_LED2_OFF;
       
     while (HW_BUTTON_PRESSED)
       ; // NOP
@@ -344,8 +345,6 @@ static long pitchfn1 = 0;
 static long pitchfn = 0;
 
 
-  HW_LED1_OFF;
-  HW_LED2_ON;
   
   InitialisePitchMeasurement();
   interrupts();
@@ -459,8 +458,6 @@ HW_LED2_TOGGLE;
 
 EEPROM.put(2,volumeXn0);
 
-  HW_LED2_OFF;
-  HW_LED1_ON;
 
 }
 
