@@ -625,7 +625,7 @@ void Application::midi_application ()
       old_midi_note = new_midi_note;
 
       // Set key follow so as next played note will be at limit of pitch bend range
-      midi_key_follow = (double)(midi_bend_range) - 0.5;
+      midi_key_follow = (double)(midi_bend_range);
 
       _midistate = MIDI_PLAYING;
     }
