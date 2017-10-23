@@ -100,6 +100,15 @@ Yes, with settings above, if you trigger a note (with volume loop) and go in one
 
 This is a limitation of midi. Maybe some synth can perform pitch bend on more that 2 octaves but none of mine does...
 
+### Tweak
+In the following lines of application.cpp:
+
+      // Set key follow so as next played note will be at limit of pitch bend range
+      midi_key_follow = (double)(midi_bend_range) - 0.2;
+
+The "-0.2" could be changed into another value from "0" to "-0.5" depending on how good you are to reach center of the note that you play. "0" is for very good players. "-0.5" is very permissive and generates note toggling in 1 semitone mode. "-0.2" is the limit where my favourite chromatic tuner's green LED turns off (and it is OK for me).
+
+
 ### LICENSE
 Original project written by Urs Gaudenz, GaudiLabs, 2016
 GNU license. This Project inherits this 2016 GNU License. 
