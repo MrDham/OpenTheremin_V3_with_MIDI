@@ -725,26 +725,32 @@ void Application::midi_calibrate ()
   
   // Pitch bend range and associated distance between notes jumps use "Pitch" pot. 
   // The user shall set synth's pitch bend range acordingly to the selected Theremin's pitch bend range:
-  // 1 semitone, 7 semitones (a fifth), 12 semitones (an octave) or 24 semitones (two octaves). 
+  // 1 semitone, 2 semitones (standard), 7 semitones (a fifth), 12 semitones (an octave) or 24 semitones (two octaves). 
   // The "1 semitone" setting blocks pitch bend generation (use portamento on the synth)
   pot_bend_range = analogRead(PITCH_POT);
-  bend_range_scale = pot_bend_range >> 8;
-  if (bend_range_scale == 0)
+  bend_range_scale = pot_bend_range >> 7;
+  switch (bend_range_scale)
   {
+  case 0:
     midi_bend_range = 1; 
-  }
-  else if (bend_range_scale == 1)
-  {
+    break; 
+  case 1:
+  case 2:
+    midi_bend_range = 2; 
+    break; 
+  case 3:
+  case 4:
     midi_bend_range = 7; 
-  }
-  else if (bend_range_scale == 2)
-  {
+    break; 
+  case 5:
+  case 6:
     midi_bend_range = 12; 
-  }
-  else
-  {
+    break; 
+  default:
     midi_bend_range = 24; 
+    break;  
   }
+  
   EEPROM.put(13,midi_bend_range);
   
   // Volume trigger uses "Volume" pot 
