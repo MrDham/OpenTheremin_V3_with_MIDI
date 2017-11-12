@@ -42,8 +42,10 @@ static uint8_t midi_bend_range = 0;
 static uint8_t midi_volume_trigger = 0;
 static uint8_t flag_legato_on = 1;
 static uint8_t flag_pitch_bend_on = 1;
+static uint8_t loop_midi_cc = 7;
+static uint8_t rod_midi_cc = 255; 
 
-uint8_t registerValue = 0;
+uint8_t registerValue = 4;
 
 uint16_t data_pot_value = 0; 
 uint16_t old_data_pot_value = 0; 
@@ -731,8 +733,6 @@ void Application::init_parameters ()
   // Transpose
   registerValue = 4;  
 
-  // Audio, Audio+Midi, MIDI
-
   // Waveform
   vWavetableSelector = 0;
 
@@ -749,7 +749,11 @@ void Application::init_parameters ()
   // Volume trigger
   midi_volume_trigger = 0;
       
-  // Loop antenna mode
+  // Rod antenna cc
+  rod_midi_cc = 255; 
+
+  // Loop antenna cc
+  loop_midi_cc = 7;
 }
 
 void Application::set_parameters ()
@@ -772,16 +776,11 @@ void Application::set_parameters ()
       break; 
 
     case 1:
-      // Audio, Audio+Midi, MIDI
-         
-      break;
-          
-    case 2:
       // Waveform
       vWavetableSelector=data_pot_value>>7;
       break;
       
-    case 3:
+    case 2:
       // Channel
       midi_channel = (uint8_t)((data_pot_value >> 6) & 0x000F);
       if (old_midi_channel != midi_channel)
@@ -792,7 +791,7 @@ void Application::set_parameters ()
       }
       break;
         
-    case 4:
+    case 3:
       // Rod antenna mode
       switch (data_pot_value >> 7)
       {
@@ -818,7 +817,7 @@ void Application::set_parameters ()
       }
       break;
         
-    case 5:
+    case 4:
       // Pitch bend range
       switch (data_pot_value >> 7)
       {
@@ -843,13 +842,66 @@ void Application::set_parameters ()
       }
       break;
       
-    case 6:
+    case 5:
       // Volume trigger
       midi_volume_trigger = (uint8_t)((data_pot_value >> 3) & 0x007F);
       break;
       
+    case 6:
+      //Rod antenna cc
+      switch (data_pot_value >> 7)
+      {
+      case 0:
+        rod_midi_cc = 255; // Nothing
+        break; 
+      case 1:
+      case 2:
+        rod_midi_cc = 8; // Balance
+        break; 
+      case 3:
+      case 4:
+        rod_midi_cc = 10; // Pan
+        break; 
+      case 5:
+      case 6:
+        rod_midi_cc = 16; // Ribbon Controler
+        break; 
+      default:
+        rod_midi_cc = 74; // Cutoff
+        break; 
+      }
+      break;
+      
+          
     default:
-      // Loop antenna mode
+      // Loop antenna cc
+      switch (data_pot_value >> 7)
+      {
+      case 0:
+        loop_midi_cc = 1; // Modulation
+        break; 
+      case 1:
+        loop_midi_cc = 2; // Breath controler
+        break; 
+      case 2:
+        loop_midi_cc = 4; // Foot controler
+        break; 
+      case 3:
+        loop_midi_cc = 7; // Volume
+        break; 
+      case 4:
+        loop_midi_cc = 11; // Expression
+        break; 
+      case 5:
+        loop_midi_cc = 71; // Resonnance
+        break; 
+      case 6:
+        loop_midi_cc = 91; // Reverb
+        break; 
+      default:
+        loop_midi_cc = 93; // Chorus
+        break; 
+      }
       break;
     }
 
