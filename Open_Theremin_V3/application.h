@@ -67,7 +67,9 @@ class Application {
     void midi_setup();
     void midi_msg_send(uint8_t channel, uint8_t midi_cmd1, uint8_t midi_cmd2, uint8_t midi_value);
     void midi_application ();
-    void midi_calibrate ();
+
+    void init_parameters ();
+    void set_parameters ();
 
 };
 

@@ -30,9 +30,14 @@ static uint16_t old_midi_bend = 0;
 
 static double midi_key_follow = 0.5;
 static uint8_t midi_channel = 0;
+static uint8_t old_midi_channel = 0;
 static uint8_t midi_bend_range = 0;
 static uint8_t midi_volume_trigger = 0;
- 
+
+uint8_t registerValue = 0;
+
+uint16_t data_pot_value = 0; 
+uint16_t old_data_pot_value = 0; 
 
 Application::Application()
   : _state(PLAYING),
@@ -65,8 +70,9 @@ initialiseInterrupts();
   EEPROM.get(4,pitchCalibrationBase);
   EEPROM.get(8,volCalibrationBase);
  
+ init_parameters ();
  midi_setup();
-
+  
 }
 
 void Application::initialiseTimer() {
@@ -169,25 +175,14 @@ void Application::loop() {
 
   uint16_t volumePotValue = 0;
   uint16_t pitchPotValue = 0;
-  int registerPotValue,registerPotValueL = 0;
-  int wavePotValue,wavePotValueL = 0;
-  uint8_t registerValue = 0;
-
-
 
   mloop:                   // Main loop avoiding the GCC "optimization"
 
   pitchPotValue    = analogRead(PITCH_POT);
   volumePotValue   = analogRead(VOLUME_POT);
-  registerPotValue   = analogRead(REGISTER_SELECT_POT);
-  wavePotValue = analogRead(WAVE_SELECT_POT);
   
-  if ((registerPotValue-registerPotValueL) >= HYST_VAL || (registerPotValueL-registerPotValue) >= HYST_VAL) registerPotValueL=registerPotValue;
-  if (((wavePotValue-wavePotValueL) >= HYST_VAL) || ((wavePotValueL-wavePotValue) >= HYST_VAL)) wavePotValueL=wavePotValue;
-
-  vWavetableSelector=wavePotValueL>>7;
-  registerValue=4-(registerPotValueL>>8);  
-
+  set_parameters ();
+  
   if (_state == PLAYING && HW_BUTTON_PRESSED) 
   {
     _state = CALIBRATING;
@@ -222,24 +217,16 @@ void Application::loop() {
       
     playStartupSound();
 
-    if (registerPotValue < 512) // if register pot turned CCW 
-    {
-      // calibrate heterodyne parameters
-      calibrate_pitch();
-      calibrate_volume();
+    // calibrate heterodyne parameters
+    calibrate_pitch();
+    calibrate_volume();
 
 
-      initialiseTimer();
-      initialiseInterrupts();
+    initialiseTimer();
+    initialiseInterrupts();
    
-      playCalibratingCountdownSound();
-      calibrate();
-    }
-    else // if register turned CW 
-    {
-      // calibrate midi parameters
-      midi_calibrate ();
-    };
+    playCalibratingCountdownSound();
+    calibrate();
   
     _mode=NORMAL;
     HW_LED1_ON;HW_LED2_OFF;
@@ -501,11 +488,6 @@ void Application::delay_NOP(unsigned long time) {
 
 void Application::midi_setup() 
 {
-
-  EEPROM.get(12,midi_channel);
-  EEPROM.get(13,midi_bend_range);
-  EEPROM.get(14,midi_volume_trigger);
-
   // Set MIDI baud rate:
   Serial.begin(115200); // Baudrate for midi to serial. Use a serial to midi router http://projectgus.github.com/hairless-midiserial/
   //Serial.begin(31250); // Baudrate for real midi. Use din connection https://www.arduino.cc/en/Tutorial/Midi or HIDUINO https://github.com/ddiakopoulos/hiduino
@@ -705,59 +687,115 @@ void Application::midi_application ()
   }
 }
 
-// midi_calibrate allows the user to set some midi parameters
-// Set potentiometer accordingly to comments bellow BEFORE entering in midi calibration mode. 
-// Hear may help somewhat to determine entered values
-void Application::midi_calibrate ()
+
+void Application::init_parameters ()
 {
-  uint16_t pot_channel;
-  uint16_t pot_bend_range;
-  uint16_t pot_volume_trigger;
+  // init data pot value to avoid 1st position to be taken into account
+  data_pot_value = analogRead(WAVE_SELECT_POT);
+  old_data_pot_value = data_pot_value;
+  
+  // Transpose
+  registerValue=0;  
 
-  uint16_t bend_range_scale; 
+  // Audio, Audio+Midi, MIDI
 
-  // Midi channel uses "Timbre" pot. 
-  // Waveform may help user do determine which couple of channel is chosen (WF 1 Lo -> Ch1, WF 1 Hi -> Ch2, WF 2 Lo -> Ch3, etc...)
-  pot_channel = analogRead(WAVE_SELECT_POT);
-  midi_channel = (uint8_t)((pot_channel >> 6) & 0x000F);
-  EEPROM.put(12,midi_channel);
-  
-  
-  // Pitch bend range and associated distance between notes jumps use "Pitch" pot. 
-  // The user shall set synth's pitch bend range acordingly to the selected Theremin's pitch bend range:
-  // 1 semitone, 2 semitones (standard), 7 semitones (a fifth), 12 semitones (an octave) or 24 semitones (two octaves). 
-  // The "1 semitone" setting blocks pitch bend generation (use portamento on the synth)
-  pot_bend_range = analogRead(PITCH_POT);
-  bend_range_scale = pot_bend_range >> 7;
-  switch (bend_range_scale)
-  {
-  case 0:
-    midi_bend_range = 1; 
-    break; 
-  case 1:
-  case 2:
-    midi_bend_range = 2; 
-    break; 
-  case 3:
-  case 4:
-    midi_bend_range = 7; 
-    break; 
-  case 5:
-  case 6:
-    midi_bend_range = 12; 
-    break; 
-  default:
-    midi_bend_range = 24; 
-    break;  
-  }
-  
-  EEPROM.put(13,midi_bend_range);
-  
-  // Volume trigger uses "Volume" pot 
-  // Select a high value if some percussive sounds are played (so as it is heard when volume is not null)
-  pot_volume_trigger = analogRead(VOLUME_POT);
-  midi_volume_trigger = (uint8_t)((pot_volume_trigger >> 3) & 0x007F);
-  EEPROM.put(14,midi_volume_trigger);
+  // Waveform
+  vWavetableSelector=0;
+
+  // Channel
+  midi_channel = 0;
+        
+  // Rod antenna mode
+
+  // Pitch bend range
+  midi_bend_range = 2; 
+      
+  // Volume trigger
+  midi_volume_trigger = 0;
+      
+  // Loop antenna mode
 }
 
+void Application::set_parameters ()
+{
+  uint16_t param_pot_value = 0;
+  uint16_t data_pot_value = 0;
+ 
+  param_pot_value = analogRead(REGISTER_SELECT_POT);
+  data_pot_value = analogRead(WAVE_SELECT_POT);
 
+  // If data pot moved
+  if (abs(data_pot_value-old_data_pot_value) >= 8)
+  {
+    // Modify selected parameter
+    switch (param_pot_value >> 7)
+    {
+    case 0:
+      // Transpose
+      registerValue=4-(data_pot_value>>8);  
+      break; 
+
+    case 1:
+      // Audio, Audio+Midi, MIDI
+         
+      break;
+          
+    case 2:
+      // Waveform
+      vWavetableSelector=data_pot_value>>7;
+      break;
+      
+    case 3:
+      // Channel
+      midi_channel = (uint8_t)((data_pot_value >> 6) & 0x000F);
+      if (old_midi_channel != midi_channel)
+      {
+        // Send all note off to avoid stuck notes
+        midi_msg_send(midi_channel, 0xB0, 0x7B, 0x00);
+        old_midi_channel == midi_channel;
+      }
+      break;
+        
+    case 4:
+      // Rod antenna mode
+      break;
+        
+    case 5:
+      // Pitch bend range
+      switch (data_pot_value >> 7)
+      {
+      case 0:
+        midi_bend_range = 1; 
+      break; 
+      case 1:
+      case 2:
+        midi_bend_range = 2; 
+        break; 
+      case 3:
+      case 4:
+        midi_bend_range = 7; 
+        break; 
+      case 5:
+      case 6:
+        midi_bend_range = 12; 
+        break; 
+      default:
+        midi_bend_range = 24; 
+        break;  
+      }
+      break;
+      
+    case 6:
+      // Volume trigger
+      midi_volume_trigger = (uint8_t)((data_pot_value >> 3) & 0x007F);
+      break;
+      
+    default:
+      // Loop antenna mode
+      break;
+    }
+
+    // Memorize data pot value to monitor changes
+    old_data_pot_value = data_pot_value;
+  }
+}
