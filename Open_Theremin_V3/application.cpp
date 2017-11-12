@@ -695,7 +695,7 @@ void Application::init_parameters ()
   old_data_pot_value = data_pot_value;
   
   // Transpose
-  registerValue=0;  
+  registerValue=4;  
 
   // Audio, Audio+Midi, MIDI
 
