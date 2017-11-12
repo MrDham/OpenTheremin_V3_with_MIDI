@@ -24,15 +24,24 @@ static float qMeasurement = 0;
 
 static int32_t volCalibrationBase   = 0;
 
+static uint16_t new_midi_note =0;
 static uint16_t old_midi_note =0;
+
+static uint16_t new_midi_volume =0;
 static uint16_t old_midi_volume =0;
+
+static uint16_t new_midi_bend =0;
 static uint16_t old_midi_bend = 0;
+static uint8_t midi_bend_low; 
+static uint8_t midi_bend_high;
 
 static double midi_key_follow = 0.5;
 static uint8_t midi_channel = 0;
 static uint8_t old_midi_channel = 0;
 static uint8_t midi_bend_range = 0;
 static uint8_t midi_volume_trigger = 0;
+static uint8_t flag_legato_on = 1;
+static uint8_t flag_pitch_bend_on = 1;
 
 uint8_t registerValue = 0;
 
@@ -70,7 +79,7 @@ initialiseInterrupts();
   EEPROM.get(4,pitchCalibrationBase);
   EEPROM.get(8,volCalibrationBase);
  
- init_parameters ();
+ init_parameters();
  midi_setup();
   
 }
@@ -514,13 +523,6 @@ void Application::midi_msg_send(uint8_t channel, uint8_t midi_cmd1, uint8_t midi
 // If pitch bend range = 1 no picth bend is generated (portamento will do a better job)
 void Application::midi_application ()
 {
-  uint16_t new_midi_note;
-  uint16_t new_midi_volume; 
-  
-  uint16_t new_midi_bend;
-  uint8_t midi_bend_low; 
-  uint8_t midi_bend_high;
-    
   double double_log_freq;
   double double_log_bend;
 
@@ -528,53 +530,6 @@ void Application::midi_application ()
   new_midi_volume = vScaledVolume >> 1; 
   new_midi_volume = min (new_midi_volume, 127);
 
-  // Calculate note and pitch bend for midi 
-  if (vPointerIncrement < 18) 
-  {
-    // Highest note
-    new_midi_note = 0; 
-    new_midi_bend = 8192;
-  }
-  else if (vPointerIncrement > 26315) 
-  {
-    // Lowest note
-    new_midi_note = 127; 
-    new_midi_bend = 8192;
-  }
-  else
-  {
-    // Find note in the playing range
-    double_log_freq = (log (vPointerIncrement/17.152) / 0.057762265); // Precise note played in the logaritmic scale
-    double_log_bend = double_log_freq - old_midi_note; // How far from last played midi chromatic note we are
-
-    // If too much far from last midi chromatic note played (midi_key_follow depends on pitch bend range)
-    if (abs (double_log_bend) >= midi_key_follow)
-    {
-      new_midi_note = round (double_log_freq);  // Select the new midi chromatic note 
-      double_log_bend = double_log_freq - new_midi_note; // calculate bend to reach precise note played
-    }
-    else
-    {
-       new_midi_note = old_midi_note; // No change 
-    }
-
-    // If pitch bend range greater than 1 
-    if (midi_bend_range > 1)
-    {
-      // use it to reach precise note played
-      new_midi_bend = 8192 + (8191 * double_log_bend / midi_bend_range); // Calculate midi pitch bend
-    }
-    else
-    {
-      // Don't use pitch bend (portamento would do a beter job)
-      new_midi_bend = 8192; 
-    }
-  }
-
-  // Prepare the 2 bites of picth bend midi message
-  midi_bend_low = (int8_t) (new_midi_bend & 0x007F);
-  midi_bend_high = (int8_t) ((new_midi_bend & 0x3F80)>> 7);
-  
   // State machine for MIDI
   switch (_midistate)
   {
@@ -598,6 +553,12 @@ void Application::midi_application ()
     // If player's hand moves away from volume antenna
     if (new_midi_volume > midi_volume_trigger)
     {
+      // Set key follow to the minimum in order to use closest note played as the center note 
+      midi_key_follow = 0.5;
+
+      // Calculate note and associated pitch bend 
+      calculate_note_bend ();
+      
       // Send pitch bend to reach precise played note (send 8192 (no pitch bend) in case of midi_bend_range == 1)
       midi_msg_send(midi_channel, 0xE0, midi_bend_low, midi_bend_high);
       old_midi_bend = new_midi_bend;
@@ -605,9 +566,6 @@ void Application::midi_application ()
       // Play the note
       midi_msg_send(midi_channel, 0x90, new_midi_note, 0x45);
       old_midi_note = new_midi_note;
-
-      // Set key follow so as next played note will be at limit of pitch bend range
-      midi_key_follow = (double)(midi_bend_range) - 0.2;
 
       _midistate = MIDI_PLAYING;
     }
@@ -632,6 +590,20 @@ void Application::midi_application ()
     // If player's hand is far from volume antenna
     if (new_midi_volume > midi_volume_trigger)
     {
+      if ( flag_legato_on == 1)
+      {
+        // Set key follow so as next played note will be at limit of pitch bend range
+        midi_key_follow = (double)(midi_bend_range) - 0.2;
+      }
+      else
+      {
+        // Set key follow to max so as no key follows
+        midi_key_follow = 127;
+      }
+
+      // Calculate note and associated pitch bend 
+      calculate_note_bend (); 
+      
       // Refresh midi pitch bend value
       if (new_midi_bend != old_midi_bend)
       {
@@ -662,9 +634,6 @@ void Application::midi_application ()
       // Send note off
       midi_msg_send(midi_channel, 0x90, old_midi_note, 0);
 
-      // Set key follow to the minimum in order to use closest note played as the center note for pitch bend next time
-      midi_key_follow = 0.5;
-      
       _midistate = MIDI_SILENT;
     }
     break;
@@ -687,6 +656,71 @@ void Application::midi_application ()
   }
 }
 
+void Application::calculate_note_bend ()
+{
+  double double_log_freq;
+  double double_log_bend;
+  double double_norm_log_bend;
+
+
+  // Calculate log freq 
+  if (vPointerIncrement < 18) 
+  {
+    // Highest note
+    double_log_freq = 0; 
+  }
+  else if (vPointerIncrement > 26315) 
+  {
+    // Lowest note
+    double_log_freq = 127; 
+  }
+  else
+  {
+    // Find note in the playing range
+    double_log_freq = (log (vPointerIncrement/17.152) / 0.057762265); // Precise note played in the logaritmic scale
+  }
+    
+  double_log_bend = double_log_freq - old_midi_note; // How far from last played midi chromatic note we are
+
+  // If too much far from last midi chromatic note played (midi_key_follow depends on pitch bend range)
+  if ((abs (double_log_bend) >= midi_key_follow) && (midi_key_follow != 127))
+  {
+    new_midi_note = round (double_log_freq);  // Select the new midi chromatic note 
+    double_log_bend = double_log_freq - new_midi_note; // calculate bend to reach precise note played
+  }
+  else
+  {
+     new_midi_note = old_midi_note; // No change 
+  }
+
+  // If pitch bend activated 
+  if (flag_pitch_bend_on == 1)
+  {
+    // use it to reach precise note played
+    double_norm_log_bend = (double_log_bend / midi_bend_range);
+    if (double_norm_log_bend > 1)
+    {
+      double_norm_log_bend = 1; 
+    }
+    else if (double_norm_log_bend < -1)
+    {
+      double_norm_log_bend = -1;
+    }
+    new_midi_bend = 8192 + (8191 * double_norm_log_bend); // Calculate midi pitch bend
+  }
+  else
+  {
+    // Don't use pitch bend 
+    new_midi_bend = 8192; 
+  }
+  
+
+  // Prepare the 2 bites of picth bend midi message
+  midi_bend_low = (int8_t) (new_midi_bend & 0x007F);
+  midi_bend_high = (int8_t) ((new_midi_bend & 0x3F80)>> 7);
+}
+
+
 
 void Application::init_parameters ()
 {
@@ -695,17 +729,19 @@ void Application::init_parameters ()
   old_data_pot_value = data_pot_value;
   
   // Transpose
-  registerValue=4;  
+  registerValue = 4;  
 
   // Audio, Audio+Midi, MIDI
 
   // Waveform
-  vWavetableSelector=0;
+  vWavetableSelector = 0;
 
   // Channel
   midi_channel = 0;
         
   // Rod antenna mode
+ flag_legato_on = 1;
+ flag_pitch_bend_on = 1;
 
   // Pitch bend range
   midi_bend_range = 2; 
@@ -758,6 +794,28 @@ void Application::set_parameters ()
         
     case 4:
       // Rod antenna mode
+      switch (data_pot_value >> 7)
+      {
+      case 0:
+      case 1:
+        flag_legato_on = 0;
+        flag_pitch_bend_on = 0;
+        break; 
+      case 2:
+      case 3:
+        flag_legato_on = 0;
+        flag_pitch_bend_on = 1;
+        break; 
+      case 4:
+      case 5:
+        flag_legato_on = 1;
+        flag_pitch_bend_on = 0;
+        break; 
+      default:
+        flag_legato_on = 1;
+        flag_pitch_bend_on = 1;
+        break;  
+      }
       break;
         
     case 5:
