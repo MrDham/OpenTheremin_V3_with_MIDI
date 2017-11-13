@@ -27,15 +27,20 @@ static int32_t volCalibrationBase   = 0;
 static uint16_t new_midi_note =0;
 static uint16_t old_midi_note =0;
 
-static uint16_t new_midi_volume =0;
-static uint16_t old_midi_volume =0;
+static uint16_t new_midi_loop_cc_val =0;
+static uint16_t old_midi_loop_cc_val =0;
+
+static uint16_t new_midi_rod_cc_val =0;
+static uint16_t old_midi_rod_cc_val =0;
 
 static uint16_t new_midi_bend =0;
 static uint16_t old_midi_bend = 0;
 static uint8_t midi_bend_low; 
 static uint8_t midi_bend_high;
 
+static double double_log_freq = 0;
 static double midi_key_follow = 0.5;
+
 static uint8_t midi_channel = 0;
 static uint8_t old_midi_channel = 0;
 static uint8_t midi_bend_range = 0;
@@ -525,27 +530,50 @@ void Application::midi_msg_send(uint8_t channel, uint8_t midi_cmd1, uint8_t midi
 // If pitch bend range = 1 no picth bend is generated (portamento will do a better job)
 void Application::midi_application ()
 {
-  double double_log_freq;
-  double double_log_bend;
+  // Calculate loop antena cc value for midi 
+  new_midi_loop_cc_val = vScaledVolume >> 1; 
+  new_midi_loop_cc_val = min (new_midi_loop_cc_val, 127);
 
-  // Calculate volume for midi 
-  new_midi_volume = vScaledVolume >> 1; 
-  new_midi_volume = min (new_midi_volume, 127);
+  // Calculate log freq 
+  if (vPointerIncrement < 18) 
+  {
+    // Highest note
+    double_log_freq = 0; 
+  }
+  else if (vPointerIncrement > 26315) 
+  {
+    // Lowest note
+    double_log_freq = 127; 
+  }
+  else
+  {
+    // Find note in the playing range
+    double_log_freq = (log (vPointerIncrement/17.152) / 0.057762265); // Precise note played in the logaritmic scale
+  }
+  
+  // Calculate rod antena cc value for midi 
+  new_midi_rod_cc_val = round (double_log_freq);
 
   // State machine for MIDI
   switch (_midistate)
   {
   case MIDI_SILENT:  
-    // Synth sound could be in Release phase of ADSR or may have some delay or reverb effect so...
-    
-    // ... don't refresh pitch bend: 
-      // Instruction "midi_key_follow = 0.5;" and unrefreshed notes would make pitch bend verry messy. 
-    
-    // ... but always refresh midi volume value. 
-    if (new_midi_volume != old_midi_volume)
+    // Always refresh midi loop antena cc. 
+    if (new_midi_loop_cc_val != old_midi_loop_cc_val)
     {
-      midi_msg_send(midi_channel, 0xB0, 0x07, new_midi_volume);
-      old_midi_volume = new_midi_volume;
+      midi_msg_send(midi_channel, 0xB0, loop_midi_cc, new_midi_loop_cc_val);
+      old_midi_loop_cc_val = new_midi_loop_cc_val;
+    }
+    else
+    {
+      // do nothing
+    }
+
+    // Always refresh midi rod antena cc if applicable. 
+    if ((rod_midi_cc != 255) && (new_midi_rod_cc_val != old_midi_rod_cc_val))
+    {
+      midi_msg_send(midi_channel, 0xB0, rod_midi_cc, new_midi_rod_cc_val);
+      old_midi_rod_cc_val = new_midi_rod_cc_val;
     }
     else
     {
@@ -553,7 +581,7 @@ void Application::midi_application ()
     }
 
     // If player's hand moves away from volume antenna
-    if (new_midi_volume > midi_volume_trigger)
+    if (new_midi_loop_cc_val > midi_volume_trigger)
     {
       // Set key follow to the minimum in order to use closest note played as the center note 
       midi_key_follow = 0.5;
@@ -578,11 +606,22 @@ void Application::midi_application ()
     break; 
   
   case MIDI_PLAYING:  
-    // Always refresh midi volume value
-    if (new_midi_volume != old_midi_volume)
+    // Always refresh midi loop antena cc. 
+    if (new_midi_loop_cc_val != old_midi_loop_cc_val)
     {
-      midi_msg_send(midi_channel, 0xB0, 0x07, new_midi_volume);
-      old_midi_volume = new_midi_volume;
+      midi_msg_send(midi_channel, 0xB0, loop_midi_cc, new_midi_loop_cc_val);
+      old_midi_loop_cc_val = new_midi_loop_cc_val;
+    }
+    else
+    {
+      // do nothing
+    }
+
+    // Always refresh midi rod antena cc if applicable. 
+    if ((rod_midi_cc != 255) && (new_midi_rod_cc_val != old_midi_rod_cc_val))
+    {
+      midi_msg_send(midi_channel, 0xB0, rod_midi_cc, new_midi_rod_cc_val);
+      old_midi_rod_cc_val = new_midi_rod_cc_val;
     }
     else
     {
@@ -590,7 +629,7 @@ void Application::midi_application ()
     }
 
     // If player's hand is far from volume antenna
-    if (new_midi_volume > midi_volume_trigger)
+    if (new_midi_loop_cc_val > midi_volume_trigger)
     {
       if ( flag_legato_on == 1)
       {
@@ -644,10 +683,6 @@ void Application::midi_application ()
     // Send all note off
     midi_msg_send(midi_channel, 0xB0, 0x7B, 0x00);
 
-    // Mute long release notes
-    midi_msg_send(midi_channel, 0xB0, 0x07, 0);
-    old_midi_volume = 0;
-
     _midistate = MIDI_MUTE;
     break;
 
@@ -660,27 +695,8 @@ void Application::midi_application ()
 
 void Application::calculate_note_bend ()
 {
-  double double_log_freq;
   double double_log_bend;
   double double_norm_log_bend;
-
-
-  // Calculate log freq 
-  if (vPointerIncrement < 18) 
-  {
-    // Highest note
-    double_log_freq = 0; 
-  }
-  else if (vPointerIncrement > 26315) 
-  {
-    // Lowest note
-    double_log_freq = 127; 
-  }
-  else
-  {
-    // Find note in the playing range
-    double_log_freq = (log (vPointerIncrement/17.152) / 0.057762265); // Precise note played in the logaritmic scale
-  }
     
   double_log_bend = double_log_freq - old_midi_note; // How far from last played midi chromatic note we are
 
@@ -867,7 +883,7 @@ void Application::set_parameters ()
         rod_midi_cc = 16; // Ribbon Controler
         break; 
       default:
-        rod_midi_cc = 74; // Cutoff
+        rod_midi_cc = 74; // Cutoff (exists of both loop and rod)
         break; 
       }
       break;
@@ -881,25 +897,25 @@ void Application::set_parameters ()
         loop_midi_cc = 1; // Modulation
         break; 
       case 1:
-        loop_midi_cc = 2; // Breath controler
-        break; 
-      case 2:
-        loop_midi_cc = 4; // Foot controler
-        break; 
-      case 3:
         loop_midi_cc = 7; // Volume
         break; 
-      case 4:
+      case 2:
         loop_midi_cc = 11; // Expression
         break; 
-      case 5:
+      case 3:
         loop_midi_cc = 71; // Resonnance
         break; 
-      case 6:
+      case 4:
+        loop_midi_cc = 74; // Cutoff (exists of both loop and rod)
+        break; 
+      case 5:
         loop_midi_cc = 91; // Reverb
         break; 
-      default:
+      case 6:
         loop_midi_cc = 93; // Chorus
+        break; 
+      default:
+        loop_midi_cc = 95; // Phaser
         break; 
       }
       break;
