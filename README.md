@@ -89,7 +89,7 @@ Sends ALL NOTE OFF on selected channel and stay in mute until it's pushed again.
 
 AUDIO: 
 
-Audio processing from antennas to output jack, including pots, LEDs and button functions, is exactly the same as in open theremin V3.  
+Audio processing from antennas to output jack, including volume and pitch pots, LEDs and button functions, is exactly the same as in open theremin V3.  
 
 
 ### What can I do to get a theremin like glissando?
