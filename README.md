@@ -100,9 +100,9 @@ Set pitch bend range of the synth with the same value
 
 ### If I do not trigger with the volume hand it also seems to trigger a new tone with the pitch antenna. Guess this is how MIDI works.
 
-When legato mode is activated if you trigger a note (with volume loop) and go in one direction (with pitch antenna) a new note will be triggered at the limit of pitch bend range. 
+When legato mode is activated, if you trigger a note (with volume loop) and go in one direction (with pitch antenna) a new note will be triggered at the limit of pitch bend range. 
 
-Legato mode is used as a workaround for a limitation of midi (max 24 semitone pitch bend). Maybe some synth can perform pitch bend on more that 2 octaves but none of mine does...
+Legato mode is used as a workaround for a limitation of midi (max 24 semitones pitch bend). Maybe some synth can perform pitch bend on more that 2 octaves but none of mine does...
 
 
 ### LICENSE
