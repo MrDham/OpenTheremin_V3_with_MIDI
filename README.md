@@ -79,7 +79,7 @@ This device runs normal calibration of antennas after pushing button for 3 secon
 
 Select a Parameter and move "Parameter's Value" to change corresponding setting. 
 
-Manipulation of "Rod antenna cc" and "Loop antenna cc" is not error proof. MIDI newbies should be advised change their value in MUTE mode. 
+Manipulation of "Rod antenna cc" and "Loop antenna cc" is not error proof. MIDI newbies should be advised to change their value in MUTE mode. 
 
 Default configuration is: Register = Lowest Register, Timbre = 1st Waveform, Channel = MIDI Channel 1, Rod antenna mode = Legato on/Pitch Bend on, Pitch bend range = 2 Semitones, Volume trigger = 0, Rod antenna cc = None, Loop antenna cc = 7-Volume. 
                 
