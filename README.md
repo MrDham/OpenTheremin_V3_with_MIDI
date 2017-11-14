@@ -40,7 +40,7 @@ https://github.com/GaudiLabs/OpenTheremin_V3.
 
 Serial port is used to send midi messages now. 
 
-### How does it works ? 
+### How does it work ? 
 
 PITCH ANTENNA (ROD): 
 
