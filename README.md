@@ -7,8 +7,7 @@ Urs makes also a very clear presentation of this MIDI feature on his website (ma
 http://www.gaudi.ch/OpenTheremin/index.php?option=com_content&view=article&id=200&Itemid=121
 
 ### Don't click on the files!
-Click on the "Download ZIP" Button to the right or [Click here](https://github.com/GaudiLabs/OpenTheremin_V3/archive/master.zip) 
-Then unpack the archive.
+Click on the "clone or download" Button to the right. Then unpack the archive.
 
 ### Open Source Theremin based on the Arduino Platform
 
