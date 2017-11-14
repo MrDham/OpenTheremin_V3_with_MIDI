@@ -70,8 +70,10 @@ This device runs normal calibration of antennas after pushing button for 3 secon
  3. Channel: 16 positions (channel 1 to 16)
  4. Rod antenna mode: 4 positions 
      (Legato off/Pitch Bend off, Legato off/Pitch Bend on, Legato on/Pitch Bend off, Legato on/Pitch Bend on)
- 5. Pitch bend range: 5 positions (1, 2, 7, 12, 24 Semitones)
- 6. Volume trigger: 16 positions (0 to 127)
+ 5. Pitch bend range: 5 positions (1, 2, 7, 12, 24 Semitones) 
+     For classical glissando and in order to have same note on audio and MIDI, use exactly same pitch bend range on your synth. 
+     Maximum setting possible is recomended.
+ 6. Volume trigger: 128 positions (0 to 127)
  7. Rod antenna cc: 5 positions 
     (None, 8-Balance, 10-Pan, 16-Ribbon controler, 74-cutoff)
  8. Loop antenna cc: 8 positions 
