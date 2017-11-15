@@ -40,20 +40,22 @@ static uint8_t midi_bend_high;
 
 static double double_log_freq = 0;
 static double midi_key_follow = 0.5;
-
+      
+// Configuration parameters
+static uint8_t registerValue = 4;
+  // wavetable selector is defined and initialized in ihandlers.cpp
 static uint8_t midi_channel = 0;
 static uint8_t old_midi_channel = 0;
-static uint8_t midi_bend_range = 0;
+static uint8_t midi_bend_range = 2;
 static uint8_t midi_volume_trigger = 0;
 static uint8_t flag_legato_on = 1;
 static uint8_t flag_pitch_bend_on = 1;
 static uint8_t loop_midi_cc = 7;
 static uint8_t rod_midi_cc = 255; 
 
-uint8_t registerValue = 4;
 
-uint16_t data_pot_value = 0; 
-uint16_t old_data_pot_value = 0; 
+static uint16_t data_pot_value = 0; 
+static uint16_t old_data_pot_value = 0; 
 
 Application::Application()
   : _state(PLAYING),
@@ -746,42 +748,17 @@ void Application::init_parameters ()
   data_pot_value = analogRead(WAVE_SELECT_POT);
   old_data_pot_value = data_pot_value;
   
-  // Transpose
-  registerValue = 4;  
-
-  // Waveform
-  vWavetableSelector = 0;
-
-  // Channel
-  midi_channel = 0;
-        
-  // Rod antenna mode
- flag_legato_on = 1;
- flag_pitch_bend_on = 1;
-
-  // Pitch bend range
-  midi_bend_range = 2; 
-      
-  // Volume trigger
-  midi_volume_trigger = 0;
-      
-  // Rod antenna cc
-  rod_midi_cc = 255; 
-
-  // Loop antenna cc
-  loop_midi_cc = 7;
 }
 
 void Application::set_parameters ()
 {
   uint16_t param_pot_value = 0;
-  uint16_t data_pot_value = 0;
  
   param_pot_value = analogRead(REGISTER_SELECT_POT);
   data_pot_value = analogRead(WAVE_SELECT_POT);
 
   // If data pot moved
-  if (abs(data_pot_value-old_data_pot_value) >= 8)
+  if (abs((int32_t)data_pot_value - (int32_t)old_data_pot_value) >= 8)
   {
     // Modify selected parameter
     switch (param_pot_value >> 7)
@@ -802,8 +779,8 @@ void Application::set_parameters ()
       if (old_midi_channel != midi_channel)
       {
         // Send all note off to avoid stuck notes
-        midi_msg_send(midi_channel, 0xB0, 0x7B, 0x00);
-        old_midi_channel == midi_channel;
+        midi_msg_send(old_midi_channel, 0xB0, 0x7B, 0x00);
+        old_midi_channel = midi_channel;
       }
       break;
         
