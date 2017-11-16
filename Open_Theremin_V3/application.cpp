@@ -24,14 +24,16 @@ static float qMeasurement = 0;
 
 static int32_t volCalibrationBase   = 0;
 
-static uint16_t new_midi_note =0;
-static uint16_t old_midi_note =0;
+static uint8_t new_midi_note =0;
+static uint8_t old_midi_note =0;
 
-static uint16_t new_midi_loop_cc_val =0;
-static uint16_t old_midi_loop_cc_val =0;
+static uint8_t new_midi_loop_cc_val =0;
+static uint8_t old_midi_loop_cc_val =0;
 
-static uint16_t new_midi_rod_cc_val =0;
-static uint16_t old_midi_rod_cc_val =0;
+static uint8_t midi_velocity = 0;
+
+static uint8_t new_midi_rod_cc_val =0;
+static uint8_t old_midi_rod_cc_val =0;
 
 static uint16_t new_midi_bend =0;
 static uint16_t old_midi_bend = 0;
@@ -53,6 +55,9 @@ static uint8_t flag_pitch_bend_on = 1;
 static uint8_t loop_midi_cc = 7;
 static uint8_t rod_midi_cc = 255; 
 
+// tweakable paramameters
+#define VELOCITY_SENS  7 // test and trial should help
+#define PLAYER_ACCURACY  0.2 // between 0 (very accurate players) and 0.5 (not accurate at all)
 
 static uint16_t data_pot_value = 0; 
 static uint16_t old_data_pot_value = 0; 
@@ -532,9 +537,14 @@ void Application::midi_msg_send(uint8_t channel, uint8_t midi_cmd1, uint8_t midi
 // If pitch bend range = 1 no picth bend is generated (portamento will do a better job)
 void Application::midi_application ()
 {
+  double delta_loop_cc_val = 0; 
+  double calculated_velocity = 0;
+  
+  
   // Calculate loop antena cc value for midi 
   new_midi_loop_cc_val = vScaledVolume >> 1; 
   new_midi_loop_cc_val = min (new_midi_loop_cc_val, 127);
+  delta_loop_cc_val = (double)new_midi_loop_cc_val - (double)old_midi_loop_cc_val;
 
   // Calculate log freq 
   if (vPointerIncrement < 18) 
@@ -594,9 +604,22 @@ void Application::midi_application ()
       // Send pitch bend to reach precise played note (send 8192 (no pitch bend) in case of midi_bend_range == 1)
       midi_msg_send(midi_channel, 0xE0, midi_bend_low, midi_bend_high);
       old_midi_bend = new_midi_bend;
+
+      // Calculate velocity
+      if (midi_timer != 0)
+      {
+        calculated_velocity = (64 * (127 - (double)midi_volume_trigger) / 127) + (VELOCITY_SENS * (double)midi_volume_trigger * delta_loop_cc_val / (double)midi_timer);
+        midi_velocity = min (round (abs (calculated_velocity)), 127);
+      }
+      else 
+      {
+        // should not happen
+        midi_velocity = 64;
+      }
+
       
       // Play the note
-      midi_msg_send(midi_channel, 0x90, new_midi_note, 0x45);
+      midi_msg_send(midi_channel, 0x90, new_midi_note, midi_velocity);
       old_midi_note = new_midi_note;
 
       _midistate = MIDI_PLAYING;
@@ -636,7 +659,7 @@ void Application::midi_application ()
       if ( flag_legato_on == 1)
       {
         // Set key follow so as next played note will be at limit of pitch bend range
-        midi_key_follow = (double)(midi_bend_range) - 0.2;
+        midi_key_follow = (double)(midi_bend_range) - PLAYER_ACCURACY;
       }
       else
       {
@@ -663,7 +686,7 @@ void Application::midi_application ()
       {
         // Play new note before muting old one to play legato on monophonic synth 
         // (pitch pend management tends to break expected effect here)
-        midi_msg_send(midi_channel, 0x90, new_midi_note, 0x45);
+        midi_msg_send(midi_channel, 0x90, new_midi_note, midi_velocity);
         midi_msg_send(midi_channel, 0x90, old_midi_note, 0);
         old_midi_note = new_midi_note;
       }
