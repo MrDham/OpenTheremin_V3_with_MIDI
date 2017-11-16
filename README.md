@@ -53,7 +53,10 @@ It can also generate a midi continuous controler change if one is selected.
 VOLUME ANTENNA (LOOP): 
 
 It generates selected midi continuous controler change, starting NOTEON and ending NOTE OFF (when playing staccato). 
+
 The trigger volume can be configured so as we have some volume at note attack on percussive sounds. 
+The trigger volume setting is also used to set sensitivity for velocity (how fast volume loop hand is moving when note is triggered). 
+Matter of fact, the higher is this setting, less margin we have for volume variation. It is compensated by increase of velocity sensitivity. 
 
 CALIBRATION:
 
@@ -72,7 +75,7 @@ This device runs normal calibration of antennas after pushing button for 3 secon
  5. Pitch bend range: 5 positions (1, 2, 7, 12, 24 Semitones). 
      For classical glissando and in order to have same note on audio and MIDI, use exactly same pitch bend range on your synth. 
      Maximum setting possible is recomended.
- 6. Volume trigger: 128 positions (0 to 127)
+ 6. Volume trigger / Velocity sensitivity (how fast moves the volume loop's hand): 128 positions (0 to 127)
  7. Rod antenna cc: 5 positions 
     (None, 8-Balance, 10-Pan, 16-Ribbon controler, 74-cutoff)
  8. Loop antenna cc: 8 positions 
