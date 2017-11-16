@@ -88,12 +88,6 @@ Manipulation of "Rod antenna cc" and "Loop antenna cc" is not error proof. MIDI 
 Default configuration is: Register = Lowest Register, Timbre = 1st Waveform, Channel = MIDI Channel 1, Rod antenna mode = Legato on/Pitch Bend on, Pitch bend range = 2 Semitones, Volume trigger = 0, Rod antenna cc = None, Loop antenna cc = 7-Volume. 
 
 
-TWEAKABLE PARAMETERS (in application.cpp):
-
-"#define VELOCITY_SENS  7" -> How easy it is to reach highest velocity (127). Something betwen 5 and 12.  
-
-"#define PLAYER_ACCURACY  0.2"  -> Pitch accuracy of player. Tolerance on note center for changing notes when playin legato. 0 (very accurate players) and 0.5 (may generate note toggling). 
-
 
 MUTE BUTTON: 
 
@@ -115,6 +109,15 @@ Set pitch bend range of the synth with the same value
 When legato mode is activated, if you trigger a note (with volume loop) and go in one direction (with pitch antenna) a new note will be triggered at the limit of pitch bend range. 
 
 Legato mode is used as a workaround for a limitation of midi (max 24 semitones pitch bend). Maybe some synth can perform pitch bend on more that 2 octaves but none of mine does...
+
+
+### Tweakable parameters (in application.cpp):
+Changing this to your taste may require some test and trial. 
+
+"#define VELOCITY_SENS  7" -> How easy it is to reach highest velocity (127). Something betwen 5 and 12.  
+
+"#define PLAYER_ACCURACY  0.2"  -> Pitch accuracy of player. Tolerance on note center for changing notes when playin legato. 0 (very accurate players) and 0.5 (may generate note toggling). 
+
 
 
 ### LICENSE
