@@ -85,6 +85,8 @@ Select a Parameter and move "Parameter's Value" to change corresponding setting.
 
 Manipulation of "Rod antenna MIDI CC" and "Loop antenna MIDI CC" is not error proof. MIDI newbies should be advised to change their value in MUTE mode. 
 
+Volume trigger = 127 (Maximum) won't generate any NOTE ON. It can be used to generate MIDI CC only. 
+
 Default configuration is: Register = Lowest Register, Timbre = 1st Waveform, Channel = MIDI Channel 1, Rod antenna mode = Legato on/Pitch Bend on, Pitch bend range = 2 Semitones, Volume trigger = 0, Rod antenna MIDI CC = None, Loop antenna MIDI CC = 7-Volume. 
 
 
