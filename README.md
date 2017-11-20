@@ -64,8 +64,8 @@ This device runs normal calibration of antennas after pushing button for 3 secon
          
  SETTINGS:
  
- "Register" Pot becomes "Selected Parameter" pot and have 8 positions. 
-  "Timbre" pot become "Parameter's Value" and have variable number a position depending on selected parameter: 
+ "Register" pot becomes "Selected Parameter" pot and have 8 positions. 
+  "Timbre" pot becomes "Parameter's Value" and have a variable number of positions depending on selected parameter: 
  
  1. Register: 4 positions as in original Open Theremin V3
  2. Timbre: 8 positions as in original Open Theremin V3
