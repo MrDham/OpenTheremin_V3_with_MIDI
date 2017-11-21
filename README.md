@@ -48,11 +48,11 @@ Then it can use PITCH BEND messages (if activated) to reach exact pitch as long 
 Beyond it can generate a new NOTE ON followed by a NOTE OFF for the previous note if legato mode activated. 
 Pitch bend range can be configured (1, 2, 7, 12 or 24 semitones) to align with synth's maximum capabilities.
 
-It can also generate a MIDI Continuous Controler (MIDI CC) changes if one is selected. 
+It can also generate a MIDI Continuous Controler changes (MIDI CC) if one is selected. 
 
 VOLUME ANTENNA (LOOP): 
 
-It generates selected MIDI Continuous Controler (MIDI CC) changes, starting NOTE ON and ending NOTE OFF (when playing staccato). 
+It generates selected MIDI Continuous Controler changes (MIDI CC), starting NOTE ON and ending NOTE OFF (when playing staccato). 
 
 The volume trigger can be configured so as we have some volume at note attack on percussive sounds. 
 The volume trigger setting is also used to set sensitivity for velocity (how fast volume loop hand is moving when note is triggered). 
