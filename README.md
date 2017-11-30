@@ -43,7 +43,7 @@ Serial port is used to send MIDI messages now.
 
 PITCH ANTENNA (ROD): 
 
-It uses first note detected as hand moves away from from volume loop antenna to generate a NOTE ON. 
+It uses first note detected as hand moves away from volume loop antenna to generate a NOTE ON. 
 Then it can use PITCH BEND messages (if activated) to reach exact pitch as long as pitch bend range will do. 
 Beyond it can generate a new NOTE ON followed by a NOTE OFF for the previous note if legato mode activated. 
 Pitch bend range can be configured (1, 2, 7, 12 or 24 semitones) to align with synth's maximum capabilities.
