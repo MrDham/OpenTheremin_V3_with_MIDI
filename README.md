@@ -116,7 +116,7 @@ Legato mode is used as a workaround for a limitation of MIDI (max 24 semitones p
 ### Tweakable parameters (in application.cpp):
 Changing this to your taste may require some test and trial. 
 
-"#define VELOCITY_SENS  7" -> How easy it is to reach highest velocity (127). Something betwen 5 and 12.  
+"#define VELOCITY_SENS  9" -> How easy it is to reach highest velocity (127). Something betwen 5 and 12.  
 
 "#define PLAYER_ACCURACY  0.2"  -> Pitch accuracy of player. Tolerance on note center for changing notes when playing legato. From 0 (very accurate players) to 0.5 (may generate note toggling). 
 
