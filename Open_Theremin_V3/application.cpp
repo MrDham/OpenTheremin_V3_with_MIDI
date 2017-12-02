@@ -56,7 +56,7 @@ static uint8_t loop_midi_cc = 7;
 static uint8_t rod_midi_cc = 255; 
 
 // tweakable paramameters
-#define VELOCITY_SENS  9 // test and trial should help
+#define VELOCITY_SENS  9 // How easy it is to reach highest velocity (127). Something betwen 5 and 12.
 #define PLAYER_ACCURACY  0.2 // between 0 (very accurate players) and 0.5 (not accurate at all)
 
 static uint16_t data_pot_value = 0; 
