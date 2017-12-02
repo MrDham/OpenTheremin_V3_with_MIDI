@@ -44,8 +44,8 @@ Serial port is used to send MIDI messages now.
 PITCH ANTENNA (ROD): 
 
 It uses first note detected as hand moves away from volume loop antenna to generate a NOTE ON. 
-Then it can use PITCH BEND messages (if activated) to reach exact pitch as long as pitch bend range will do. 
-Beyond it can generate a new NOTE ON followed by a NOTE OFF for the previous note if legato mode activated. 
+Then, it can use PITCH BEND messages (if activated) to reach exact pitch as long as pitch bend range will do. 
+Beyond, it can generate a new NOTE ON followed by a NOTE OFF for the previous note if legato mode activated. 
 Pitch bend range can be configured (1, 2, 7, 12 or 24 semitones) to align with synth's maximum capabilities.
 
 It can also generate selected MIDI Continuous Controler changes (MIDI CC). 
@@ -97,7 +97,7 @@ Sends ALL NOTE OFF on selected channel and stay in mute until it is pushed again
 
 AUDIO: 
 
-Audio processing from antennas to output jack, including volume and pitch pots, LEDs and button functions, is exactly the same as in open theremin V3.  
+Audio processing from antennas to output jack, including volume and pitch pots, LEDs and button functions, is exactly the same as in open theremin V3.  You can play the Audio and the MIDI side by side. 
 
 
 ### What can I do to get a theremin like glissando?
