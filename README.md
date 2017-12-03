@@ -83,6 +83,8 @@ This device runs normal calibration of antennas after pushing button for 3 secon
 
 Select a Parameter and move "Parameter's Value" to change corresponding setting. 
 
+The picture at https://github.com/MrDham/OpenTheremin_V3_with_MIDI/blob/V2-Project/MIDI%20Open%20Theremin%20V3%20HMI.bmp gives an example of possible HMI: on "Value" pot, red lines have 4 positions, grey lines have 5 positions and yellow lines have 8 positions. On "Parameter" pot you see coloured lines indicating which colour to follow for the "Value" pot. 
+
 Manipulation of "Rod antenna MIDI CC" and "Loop antenna MIDI CC" is not error proof. MIDI newbies should be advised to change their value in MUTE mode. 
 
 Volume trigger = 127 (Maximum) won't generate any NOTE ON. It can be used to generate MIDI CC only. 
