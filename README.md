@@ -5,7 +5,7 @@ https://github.com/MrDham/OpenTheremin_V3_with_MIDI/tree/V2-Project
 It will be pulled soon to this "master" branch. 
 
 
-## Open Theremin V3 with MIDI interface control software for Arduino UNO 
+## Open Theremin V3 with MIDI interface control software V1.0 for Arduino UNO 
 
 Based on Arduino UNO Software for the Open.Theremin version 3.0  Copyright (C) 2010-2016 by Urs Gaudenz
 https://github.com/GaudiLabs/OpenTheremin_V3
