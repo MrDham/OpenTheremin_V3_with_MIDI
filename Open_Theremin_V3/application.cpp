@@ -24,15 +24,43 @@ static float qMeasurement = 0;
 
 static int32_t volCalibrationBase   = 0;
 
-static uint16_t old_midi_note =0;
-static uint16_t old_midi_volume =0;
-static uint16_t old_midi_bend = 0;
+static uint8_t new_midi_note =0;
+static uint8_t old_midi_note =0;
 
+static uint8_t new_midi_loop_cc_val =0;
+static uint8_t old_midi_loop_cc_val =0;
+
+static uint8_t midi_velocity = 0;
+
+static uint8_t new_midi_rod_cc_val =0;
+static uint8_t old_midi_rod_cc_val =0;
+
+static uint16_t new_midi_bend =0;
+static uint16_t old_midi_bend = 0;
+static uint8_t midi_bend_low; 
+static uint8_t midi_bend_high;
+
+static double double_log_freq = 0;
 static double midi_key_follow = 0.5;
+      
+// Configuration parameters
+static uint8_t registerValue = 4;
+  // wavetable selector is defined and initialized in ihandlers.cpp
 static uint8_t midi_channel = 0;
-static uint8_t midi_bend_range = 0;
+static uint8_t old_midi_channel = 0;
+static uint8_t midi_bend_range = 2;
 static uint8_t midi_volume_trigger = 0;
- 
+static uint8_t flag_legato_on = 1;
+static uint8_t flag_pitch_bend_on = 1;
+static uint8_t loop_midi_cc = 7;
+static uint8_t rod_midi_cc = 255; 
+
+// tweakable paramameters
+#define VELOCITY_SENS  9 // How easy it is to reach highest velocity (127). Something betwen 5 and 12.
+#define PLAYER_ACCURACY  0.2 // between 0 (very accurate players) and 0.5 (not accurate at all)
+
+static uint16_t data_pot_value = 0; 
+static uint16_t old_data_pot_value = 0; 
 
 Application::Application()
   : _state(PLAYING),
@@ -65,8 +93,9 @@ initialiseInterrupts();
   EEPROM.get(4,pitchCalibrationBase);
   EEPROM.get(8,volCalibrationBase);
  
+ init_parameters();
  midi_setup();
-
+  
 }
 
 void Application::initialiseTimer() {
@@ -169,25 +198,14 @@ void Application::loop() {
 
   uint16_t volumePotValue = 0;
   uint16_t pitchPotValue = 0;
-  int registerPotValue,registerPotValueL = 0;
-  int wavePotValue,wavePotValueL = 0;
-  uint8_t registerValue = 0;
-
-
 
   mloop:                   // Main loop avoiding the GCC "optimization"
 
   pitchPotValue    = analogRead(PITCH_POT);
   volumePotValue   = analogRead(VOLUME_POT);
-  registerPotValue   = analogRead(REGISTER_SELECT_POT);
-  wavePotValue = analogRead(WAVE_SELECT_POT);
   
-  if ((registerPotValue-registerPotValueL) >= HYST_VAL || (registerPotValueL-registerPotValue) >= HYST_VAL) registerPotValueL=registerPotValue;
-  if (((wavePotValue-wavePotValueL) >= HYST_VAL) || ((wavePotValueL-wavePotValue) >= HYST_VAL)) wavePotValueL=wavePotValue;
-
-  vWavetableSelector=wavePotValueL>>7;
-  registerValue=4-(registerPotValueL>>8);  
-
+  set_parameters ();
+  
   if (_state == PLAYING && HW_BUTTON_PRESSED) 
   {
     _state = CALIBRATING;
@@ -222,24 +240,16 @@ void Application::loop() {
       
     playStartupSound();
 
-    if (registerPotValue < 512) // if register pot turned CCW 
-    {
-      // calibrate heterodyne parameters
-      calibrate_pitch();
-      calibrate_volume();
+    // calibrate heterodyne parameters
+    calibrate_pitch();
+    calibrate_volume();
 
 
-      initialiseTimer();
-      initialiseInterrupts();
+    initialiseTimer();
+    initialiseInterrupts();
    
-      playCalibratingCountdownSound();
-      calibrate();
-    }
-    else // if register turned CW 
-    {
-      // calibrate midi parameters
-      midi_calibrate ();
-    };
+    playCalibratingCountdownSound();
+    calibrate();
   
     _mode=NORMAL;
     HW_LED1_ON;HW_LED2_OFF;
@@ -501,11 +511,6 @@ void Application::delay_NOP(unsigned long time) {
 
 void Application::midi_setup() 
 {
-
-  EEPROM.get(12,midi_channel);
-  EEPROM.get(13,midi_bend_range);
-  EEPROM.get(14,midi_volume_trigger);
-
   // Set MIDI baud rate:
   Serial.begin(115200); // Baudrate for midi to serial. Use a serial to midi router http://projectgus.github.com/hairless-midiserial/
   //Serial.begin(31250); // Baudrate for real midi. Use din connection https://www.arduino.cc/en/Tutorial/Midi or HIDUINO https://github.com/ddiakopoulos/hiduino
@@ -532,81 +537,55 @@ void Application::midi_msg_send(uint8_t channel, uint8_t midi_cmd1, uint8_t midi
 // If pitch bend range = 1 no picth bend is generated (portamento will do a better job)
 void Application::midi_application ()
 {
-  uint16_t new_midi_note;
-  uint16_t new_midi_volume; 
+  double delta_loop_cc_val = 0; 
+  double calculated_velocity = 0;
   
-  uint16_t new_midi_bend;
-  uint8_t midi_bend_low; 
-  uint8_t midi_bend_high;
-    
-  double double_log_freq;
-  double double_log_bend;
+  
+  // Calculate loop antena cc value for midi 
+  new_midi_loop_cc_val = vScaledVolume >> 1; 
+  new_midi_loop_cc_val = min (new_midi_loop_cc_val, 127);
+  delta_loop_cc_val = (double)new_midi_loop_cc_val - (double)old_midi_loop_cc_val;
 
-  // Calculate volume for midi 
-  new_midi_volume = vScaledVolume >> 1; 
-  new_midi_volume = min (new_midi_volume, 127);
-
-  // Calculate note and pitch bend for midi 
+  // Calculate log freq 
   if (vPointerIncrement < 18) 
   {
     // Highest note
-    new_midi_note = 0; 
-    new_midi_bend = 8192;
+    double_log_freq = 0; 
   }
   else if (vPointerIncrement > 26315) 
   {
     // Lowest note
-    new_midi_note = 127; 
-    new_midi_bend = 8192;
+    double_log_freq = 127; 
   }
   else
   {
     // Find note in the playing range
     double_log_freq = (log (vPointerIncrement/17.152) / 0.057762265); // Precise note played in the logaritmic scale
-    double_log_bend = double_log_freq - old_midi_note; // How far from last played midi chromatic note we are
-
-    // If too much far from last midi chromatic note played (midi_key_follow depends on pitch bend range)
-    if (abs (double_log_bend) >= midi_key_follow)
-    {
-      new_midi_note = round (double_log_freq);  // Select the new midi chromatic note 
-      double_log_bend = double_log_freq - new_midi_note; // calculate bend to reach precise note played
-    }
-    else
-    {
-       new_midi_note = old_midi_note; // No change 
-    }
-
-    // If pitch bend range greater than 1 
-    if (midi_bend_range > 1)
-    {
-      // use it to reach precise note played
-      new_midi_bend = 8192 + (8191 * double_log_bend / midi_bend_range); // Calculate midi pitch bend
-    }
-    else
-    {
-      // Don't use pitch bend (portamento would do a beter job)
-      new_midi_bend = 8192; 
-    }
   }
-
-  // Prepare the 2 bites of picth bend midi message
-  midi_bend_low = (int8_t) (new_midi_bend & 0x007F);
-  midi_bend_high = (int8_t) ((new_midi_bend & 0x3F80)>> 7);
   
+  // Calculate rod antena cc value for midi 
+  new_midi_rod_cc_val = round (double_log_freq);
+
   // State machine for MIDI
   switch (_midistate)
   {
   case MIDI_SILENT:  
-    // Synth sound could be in Release phase of ADSR or may have some delay or reverb effect so...
-    
-    // ... don't refresh pitch bend: 
-      // Instruction "midi_key_follow = 0.5;" and unrefreshed notes would make pitch bend verry messy. 
-    
-    // ... but always refresh midi volume value. 
-    if (new_midi_volume != old_midi_volume)
+    // Always refresh midi loop antena cc. 
+    if (new_midi_loop_cc_val != old_midi_loop_cc_val)
     {
-      midi_msg_send(midi_channel, 0xB0, 0x07, new_midi_volume);
-      old_midi_volume = new_midi_volume;
+      midi_msg_send(midi_channel, 0xB0, loop_midi_cc, new_midi_loop_cc_val);
+      old_midi_loop_cc_val = new_midi_loop_cc_val;
+    }
+    else
+    {
+      // do nothing
+    }
+
+    // Always refresh midi rod antena cc if applicable. 
+    if ((rod_midi_cc != 255) && (new_midi_rod_cc_val != old_midi_rod_cc_val))
+    {
+      midi_msg_send(midi_channel, 0xB0, rod_midi_cc, new_midi_rod_cc_val);
+      old_midi_rod_cc_val = new_midi_rod_cc_val;
     }
     else
     {
@@ -614,18 +593,34 @@ void Application::midi_application ()
     }
 
     // If player's hand moves away from volume antenna
-    if (new_midi_volume > midi_volume_trigger)
+    if (new_midi_loop_cc_val > midi_volume_trigger)
     {
+      // Set key follow to the minimum in order to use closest note played as the center note 
+      midi_key_follow = 0.5;
+
+      // Calculate note and associated pitch bend 
+      calculate_note_bend ();
+      
       // Send pitch bend to reach precise played note (send 8192 (no pitch bend) in case of midi_bend_range == 1)
       midi_msg_send(midi_channel, 0xE0, midi_bend_low, midi_bend_high);
       old_midi_bend = new_midi_bend;
+
+      // Calculate velocity
+      if (midi_timer != 0)
+      {
+        calculated_velocity = (64 * (127 - (double)midi_volume_trigger) / 127) + (VELOCITY_SENS * (double)midi_volume_trigger * delta_loop_cc_val / (double)midi_timer);
+        midi_velocity = min (round (abs (calculated_velocity)), 127);
+      }
+      else 
+      {
+        // should not happen
+        midi_velocity = 64;
+      }
+
       
       // Play the note
-      midi_msg_send(midi_channel, 0x90, new_midi_note, 0x45);
+      midi_msg_send(midi_channel, 0x90, new_midi_note, midi_velocity);
       old_midi_note = new_midi_note;
-
-      // Set key follow so as next played note will be at limit of pitch bend range
-      midi_key_follow = (double)(midi_bend_range) - 0.2;
 
       _midistate = MIDI_PLAYING;
     }
@@ -636,11 +631,22 @@ void Application::midi_application ()
     break; 
   
   case MIDI_PLAYING:  
-    // Always refresh midi volume value
-    if (new_midi_volume != old_midi_volume)
+    // Always refresh midi loop antena cc. 
+    if (new_midi_loop_cc_val != old_midi_loop_cc_val)
     {
-      midi_msg_send(midi_channel, 0xB0, 0x07, new_midi_volume);
-      old_midi_volume = new_midi_volume;
+      midi_msg_send(midi_channel, 0xB0, loop_midi_cc, new_midi_loop_cc_val);
+      old_midi_loop_cc_val = new_midi_loop_cc_val;
+    }
+    else
+    {
+      // do nothing
+    }
+
+    // Always refresh midi rod antena cc if applicable. 
+    if ((rod_midi_cc != 255) && (new_midi_rod_cc_val != old_midi_rod_cc_val))
+    {
+      midi_msg_send(midi_channel, 0xB0, rod_midi_cc, new_midi_rod_cc_val);
+      old_midi_rod_cc_val = new_midi_rod_cc_val;
     }
     else
     {
@@ -648,8 +654,22 @@ void Application::midi_application ()
     }
 
     // If player's hand is far from volume antenna
-    if (new_midi_volume > midi_volume_trigger)
+    if (new_midi_loop_cc_val > midi_volume_trigger)
     {
+      if ( flag_legato_on == 1)
+      {
+        // Set key follow so as next played note will be at limit of pitch bend range
+        midi_key_follow = (double)(midi_bend_range) - PLAYER_ACCURACY;
+      }
+      else
+      {
+        // Set key follow to max so as no key follows
+        midi_key_follow = 127;
+      }
+
+      // Calculate note and associated pitch bend 
+      calculate_note_bend (); 
+      
       // Refresh midi pitch bend value
       if (new_midi_bend != old_midi_bend)
       {
@@ -666,7 +686,7 @@ void Application::midi_application ()
       {
         // Play new note before muting old one to play legato on monophonic synth 
         // (pitch pend management tends to break expected effect here)
-        midi_msg_send(midi_channel, 0x90, new_midi_note, 0x45);
+        midi_msg_send(midi_channel, 0x90, new_midi_note, midi_velocity);
         midi_msg_send(midi_channel, 0x90, old_midi_note, 0);
         old_midi_note = new_midi_note;
       }
@@ -680,9 +700,6 @@ void Application::midi_application ()
       // Send note off
       midi_msg_send(midi_channel, 0x90, old_midi_note, 0);
 
-      // Set key follow to the minimum in order to use closest note played as the center note for pitch bend next time
-      midi_key_follow = 0.5;
-      
       _midistate = MIDI_SILENT;
     }
     break;
@@ -690,10 +707,6 @@ void Application::midi_application ()
   case MIDI_STOP:
     // Send all note off
     midi_msg_send(midi_channel, 0xB0, 0x7B, 0x00);
-
-    // Mute long release notes
-    midi_msg_send(midi_channel, 0xB0, 0x07, 0);
-    old_midi_volume = 0;
 
     _midistate = MIDI_MUTE;
     break;
@@ -705,59 +718,210 @@ void Application::midi_application ()
   }
 }
 
-// midi_calibrate allows the user to set some midi parameters
-// Set potentiometer accordingly to comments bellow BEFORE entering in midi calibration mode. 
-// Hear may help somewhat to determine entered values
-void Application::midi_calibrate ()
+void Application::calculate_note_bend ()
 {
-  uint16_t pot_channel;
-  uint16_t pot_bend_range;
-  uint16_t pot_volume_trigger;
+  double double_log_bend;
+  double double_norm_log_bend;
+    
+  double_log_bend = double_log_freq - old_midi_note; // How far from last played midi chromatic note we are
 
-  uint16_t bend_range_scale; 
-
-  // Midi channel uses "Timbre" pot. 
-  // Waveform may help user do determine which couple of channel is chosen (WF 1 Lo -> Ch1, WF 1 Hi -> Ch2, WF 2 Lo -> Ch3, etc...)
-  pot_channel = analogRead(WAVE_SELECT_POT);
-  midi_channel = (uint8_t)((pot_channel >> 6) & 0x000F);
-  EEPROM.put(12,midi_channel);
-  
-  
-  // Pitch bend range and associated distance between notes jumps use "Pitch" pot. 
-  // The user shall set synth's pitch bend range acordingly to the selected Theremin's pitch bend range:
-  // 1 semitone, 2 semitones (standard), 7 semitones (a fifth), 12 semitones (an octave) or 24 semitones (two octaves). 
-  // The "1 semitone" setting blocks pitch bend generation (use portamento on the synth)
-  pot_bend_range = analogRead(PITCH_POT);
-  bend_range_scale = pot_bend_range >> 7;
-  switch (bend_range_scale)
+  // If too much far from last midi chromatic note played (midi_key_follow depends on pitch bend range)
+  if ((abs (double_log_bend) >= midi_key_follow) && (midi_key_follow != 127))
   {
-  case 0:
-    midi_bend_range = 1; 
-    break; 
-  case 1:
-  case 2:
-    midi_bend_range = 2; 
-    break; 
-  case 3:
-  case 4:
-    midi_bend_range = 7; 
-    break; 
-  case 5:
-  case 6:
-    midi_bend_range = 12; 
-    break; 
-  default:
-    midi_bend_range = 24; 
-    break;  
+    new_midi_note = round (double_log_freq);  // Select the new midi chromatic note 
+    double_log_bend = double_log_freq - new_midi_note; // calculate bend to reach precise note played
+  }
+  else
+  {
+     new_midi_note = old_midi_note; // No change 
+  }
+
+  // If pitch bend activated 
+  if (flag_pitch_bend_on == 1)
+  {
+    // use it to reach precise note played
+    double_norm_log_bend = (double_log_bend / midi_bend_range);
+    if (double_norm_log_bend > 1)
+    {
+      double_norm_log_bend = 1; 
+    }
+    else if (double_norm_log_bend < -1)
+    {
+      double_norm_log_bend = -1;
+    }
+    new_midi_bend = 8192 + (8191 * double_norm_log_bend); // Calculate midi pitch bend
+  }
+  else
+  {
+    // Don't use pitch bend 
+    new_midi_bend = 8192; 
   }
   
-  EEPROM.put(13,midi_bend_range);
-  
-  // Volume trigger uses "Volume" pot 
-  // Select a high value if some percussive sounds are played (so as it is heard when volume is not null)
-  pot_volume_trigger = analogRead(VOLUME_POT);
-  midi_volume_trigger = (uint8_t)((pot_volume_trigger >> 3) & 0x007F);
-  EEPROM.put(14,midi_volume_trigger);
+
+  // Prepare the 2 bites of picth bend midi message
+  midi_bend_low = (int8_t) (new_midi_bend & 0x007F);
+  midi_bend_high = (int8_t) ((new_midi_bend & 0x3F80)>> 7);
 }
 
 
+
+void Application::init_parameters ()
+{
+  // init data pot value to avoid 1st position to be taken into account
+  data_pot_value = analogRead(WAVE_SELECT_POT);
+  old_data_pot_value = data_pot_value;
+  
+}
+
+void Application::set_parameters ()
+{
+  uint16_t param_pot_value = 0;
+ 
+  param_pot_value = analogRead(REGISTER_SELECT_POT);
+  data_pot_value = analogRead(WAVE_SELECT_POT);
+
+  // If data pot moved
+  if (abs((int32_t)data_pot_value - (int32_t)old_data_pot_value) >= 8)
+  {
+    // Modify selected parameter
+    switch (param_pot_value >> 7)
+    {
+    case 0:
+      // Transpose
+      registerValue=4-(data_pot_value>>8);  
+      break; 
+
+    case 1:
+      // Waveform
+      vWavetableSelector=data_pot_value>>7;
+      break;
+      
+    case 2:
+      // Channel
+      midi_channel = (uint8_t)((data_pot_value >> 6) & 0x000F);
+      if (old_midi_channel != midi_channel)
+      {
+        // Send all note off to avoid stuck notes
+        midi_msg_send(old_midi_channel, 0xB0, 0x7B, 0x00);
+        old_midi_channel = midi_channel;
+      }
+      break;
+        
+    case 3:
+      // Rod antenna mode
+      switch (data_pot_value >> 7)
+      {
+      case 0:
+      case 1:
+        flag_legato_on = 0;
+        flag_pitch_bend_on = 0;
+        break; 
+      case 2:
+      case 3:
+        flag_legato_on = 0;
+        flag_pitch_bend_on = 1;
+        break; 
+      case 4:
+      case 5:
+        flag_legato_on = 1;
+        flag_pitch_bend_on = 0;
+        break; 
+      default:
+        flag_legato_on = 1;
+        flag_pitch_bend_on = 1;
+        break;  
+      }
+      break;
+        
+    case 4:
+      // Pitch bend range
+      switch (data_pot_value >> 7)
+      {
+      case 0:
+        midi_bend_range = 1; 
+      break; 
+      case 1:
+      case 2:
+        midi_bend_range = 2; 
+        break; 
+      case 3:
+      case 4:
+        midi_bend_range = 7; 
+        break; 
+      case 5:
+      case 6:
+        midi_bend_range = 12; 
+        break; 
+      default:
+        midi_bend_range = 24; 
+        break;  
+      }
+      break;
+      
+    case 5:
+      // Volume trigger
+      midi_volume_trigger = (uint8_t)((data_pot_value >> 3) & 0x007F);
+      break;
+      
+    case 6:
+      //Rod antenna cc
+      switch (data_pot_value >> 7)
+      {
+      case 0:
+        rod_midi_cc = 255; // Nothing
+        break; 
+      case 1:
+      case 2:
+        rod_midi_cc = 8; // Balance
+        break; 
+      case 3:
+      case 4:
+        rod_midi_cc = 10; // Pan
+        break; 
+      case 5:
+      case 6:
+        rod_midi_cc = 16; // Ribbon Controler
+        break; 
+      default:
+        rod_midi_cc = 74; // Cutoff (exists of both loop and rod)
+        break; 
+      }
+      break;
+      
+          
+    default:
+      // Loop antenna cc
+      switch (data_pot_value >> 7)
+      {
+      case 0:
+        loop_midi_cc = 1; // Modulation
+        break; 
+      case 1:
+        loop_midi_cc = 7; // Volume
+        break; 
+      case 2:
+        loop_midi_cc = 11; // Expression
+        break; 
+      case 3:
+        loop_midi_cc = 71; // Resonnance
+        break; 
+      case 4:
+        loop_midi_cc = 74; // Cutoff (exists of both loop and rod)
+        break; 
+      case 5:
+        loop_midi_cc = 91; // Reverb
+        break; 
+      case 6:
+        loop_midi_cc = 93; // Chorus
+        break; 
+      default:
+        loop_midi_cc = 95; // Phaser
+        break; 
+      }
+      break;
+    }
+
+    // Memorize data pot value to monitor changes
+    old_data_pot_value = data_pot_value;
+  }
+}

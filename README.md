@@ -1,11 +1,5 @@
-This is V1.0. If you are interested, a much enhanced V2.0 is close to delivery under "V2-Project" branch : 
+## Open Theremin V3 with MIDI interface control software V2.0 for Arduino UNO 
 
-https://github.com/MrDham/OpenTheremin_V3_with_MIDI/tree/V2-Project
-
-It will be pulled soon to this "master" branch. 
-
-
-## Open Theremin V3 with MIDI interface control software V1.0 for Arduino UNO 
 
 Based on Arduino UNO Software for the Open.Theremin version 3.0  Copyright (C) 2010-2016 by Urs Gaudenz
 https://github.com/GaudiLabs/OpenTheremin_V3
@@ -14,8 +8,7 @@ Urs makes also a very clear presentation of this MIDI feature on his website (ma
 http://www.gaudi.ch/OpenTheremin/index.php?option=com_content&view=article&id=200&Itemid=121
 
 ### Don't click on the files!
-Click on the "Download ZIP" Button to the right or [Click here](https://github.com/GaudiLabs/OpenTheremin_V3/archive/master.zip) 
-Then unpack the archive.
+Click on the "clone or download" Button to the right. Then unpack the archive.
 
 ### Open Source Theremin based on the Arduino Platform
 
@@ -34,7 +27,7 @@ http://www.gaudi.ch/OpenTheremin/
   
    //Serial.begin(31250); // Baudrate for real midi. Use din connection https://www.arduino.cc/en/Tutorial/Midi or HIDUINO https://github.com/ddiakopoulos/hiduino
 
-   I tested "Hiduino" and "midi to serial" modes, both are OK.
+   I tested "Hiduino" and "MIDI to serial" modes, both are OK.
    
 4. Selecting the correct usb port on Tools -> Serial Port
 5. Select the correct arduino board from Tools -> Board
@@ -45,75 +38,91 @@ Serial communication implemented for program monitoring purpose was removed (Par
 If you need to monitor calibration for antenna problem fixing, please use original master branch from 
 https://github.com/GaudiLabs/OpenTheremin_V3. 
 
-Serial port is used to send midi messages now. 
+Serial port is used to send MIDI messages now. 
 
-### How does it works ? 
+### How does it work ? 
 
-PITCH : 
-It uses first note detected at volume rise to generate a NOTEON. 
-Then it uses PITCHBEND to reach pitch as long as pitch bend range will do. 
-Beyond it generates a new NOTEON  followed by a NOTEOFF for the previous note (legato). 
+PITCH ANTENNA (ROD): 
+
+It uses first note detected as hand moves away from volume loop antenna to generate a NOTE ON. 
+Then, it can use PITCH BEND messages (if activated) to reach exact pitch as long as pitch bend range will do. 
+Beyond, it can generate a new NOTE ON followed by a NOTE OFF for the previous note if legato mode activated. 
 Pitch bend range can be configured (1, 2, 7, 12 or 24 semitones) to align with synth's maximum capabilities.
-One exception is that I desactivated pitch bend in 1 semitone mode because portamento does a better job then. 
 
-VOLUME: 
-It generates VOLUME continuous controler, starting NOTEON and ending NOTE OFF (when playing staccato). 
-The trigger volume can be configured so as we have some volume at note attack on percussive sounds. 
+It can also generate selected MIDI Continuous Controler changes (MIDI CC). 
 
-CONFIGURATION: 
-There is two calibration mode: 
- 1. If REGISTER POT turned counter clockwise at entering in calibration mode 
-         -> Runs normal calibration of antennas.
+VOLUME ANTENNA (LOOP): 
+
+It generates selected MIDI Continuous Controler changes (MIDI CC), starting NOTE ON and ending NOTE OFF (when playing staccato). 
+
+The volume trigger can be configured so as we have some volume at note attack on percussive sounds. 
+The volume trigger setting is also used to set sensitivity for velocity (how fast volume loop hand is moving when note is triggered). 
+Matter of fact, the higher is this setting, less margin we have for volume variation. It is compensated by increase of velocity sensitivity. 
+
+CALIBRATION:
+
+This device runs normal calibration of antennas after pushing button for 3 seconds as per initial project
          
- 2. If REGISTER POT turned clockwise at entering in calibration mode 
-         -> Records midi settings as per pot position BEFORE entering in calibration mode:
-           
-		VOLUME POT : sets volume trigger level
-  
-		PITCH POT : sets pitch bend range (1, 2, 7, 12 or 24 semitones) 
-		Use exactly same pitch bend range on your synth. Maximum setting possible is recomended. 
-  
-		TIMBRE POT : sets Channel. In the absence of graduation, timbre variation may help 
-               (Wave Form 1 low = CH1, WF 1 High = CH2, WF 2 Low = CH3, etc...)
-               
+ SETTINGS:
+ 
+ "Register" pot becomes "Selected Parameter" pot and have 8 positions. 
+  "Timbre" pot becomes "Parameter's Value" and have a variable number of positions depending on selected parameter: 
+ 
+ 1. Register: 4 positions as in original Open Theremin V3
+ 2. Timbre: 8 positions as in original Open Theremin V3
+ 3. Channel: 16 positions (channel 1 to 16)
+ 4. Rod antenna mode: 4 positions 
+     (Legato off/Pitch Bend off, Legato off/Pitch Bend on, Legato on/Pitch Bend off, Legato on/Pitch Bend on)
+ 5. Pitch bend range: 5 positions (1, 2, 7, 12, 24 Semitones). 
+     For classical glissando and in order to have same note on audio and MIDI, use exactly same pitch bend range on your synth. 
+     Maximum setting possible is recomended.
+ 6. Volume trigger / Velocity sensitivity (how fast moves the volume loop's hand): 128 positions (0 to 127)
+ 7. Rod antenna MIDI CC: 5 positions 
+    (None, 8-Balance, 10-Pan, 16-Ribbon controler, 74-cutoff)
+ 8. Loop antenna MIDI CC: 8 positions 
+    (1-Modulation, 7-Volume, 11-Expression, 71-Resonnance, 74-Cutoff, 91-Reverb, 93-Chorus, 95-Phaser)
+
+Select a Parameter and move "Parameter's Value" to change corresponding setting. 
+
+The picture at https://github.com/MrDham/OpenTheremin_V3_with_MIDI/blob/V2-Project/MIDI%20Open%20Theremin%20V3%20HMI.bmp gives an example of possible HMI: on "Value" pot, red lines have 4 positions, grey lines have 5 positions and yellow lines have 8 positions. On "Parameter" pot you see coloured lines indicating which colour to follow for the "Value" pot. 
+
+Manipulation of "Rod antenna MIDI CC" and "Loop antenna MIDI CC" is not error proof. MIDI newbies should be advised to change their value in MUTE mode. 
+
+Volume trigger = 127 (Maximum) won't generate any NOTE ON. It can be used to generate MIDI CC only. 
+
+Default configuration is: Register = Lowest Register, Timbre = 1st Waveform, Channel = MIDI Channel 1, Rod antenna mode = Legato on/Pitch Bend on, Pitch bend range = 2 Semitones, Volume trigger = 0, Rod antenna MIDI CC = None, Loop antenna MIDI CC = 7-Volume. 
+
+
+
 MUTE BUTTON: 
-Sends ALL NOTE OFF on selected channel and stay in mute until it's pushed again.  
+
+Sends ALL NOTE OFF on selected channel and stay in mute until it is pushed again.  
 
 AUDIO: 
-Audio processing from antennas to output jack, including pots, LEDs and button functions, is exactly the same as in open theremin V3.  
+
+Audio processing from antennas to output jack, including volume and pitch pots, LEDs and button functions, is exactly the same as in open theremin V3.  You can play the Audio and the MIDI side by side. 
 
 
 ### What can I do to get a theremin like glissando?
 
-Set pitch bend range of the theremin with a high value (12 semitones or 24 semitones).
+Activate picth bend and set pitch bend range of the theremin with a high value (12 semitones or 24 semitones).
+Set pitch bend range of the synth with the same value. 
 
-Set pitch bend range of the synth with the same value
-
-Closest to real theremin settings (pitch bend range = 24 semitones):
-
-  1. Set pots like this: Volume = Min, Pitch = Max, Register = Max, Timbre = Midi channel.
-
-  2. Push button for two seconds.
-
-  3. Then set pots as for audio (Example : Volume = Mid, Pitch = Mid, Register = Wanted octave, Timbre = any)
-
-  4. Play (you can mix synth and audio if you want)
-
- 
 
 ### If I do not trigger with the volume hand it also seems to trigger a new tone with the pitch antenna. Guess this is how MIDI works.
 
-Yes, with settings above, if you trigger a note (with volume loop) and go in one direction (with pitch antenna) a new note will be triggered after two octaves.
+When legato mode is activated, if you trigger a note (with volume loop) and go in one direction (with pitch antenna) a new note will be triggered at the limit of pitch bend range. 
 
-This is a limitation of midi. Maybe some synth can perform pitch bend on more that 2 octaves but none of mine does...
+Legato mode is used as a workaround for a limitation of MIDI (max 24 semitones pitch bend). Maybe some synth can perform pitch bend on more that 2 octaves but none of mine does...
 
-### Tweak
-In the following lines of application.cpp:
 
-      // Set key follow so as next played note will be at limit of pitch bend range
-      midi_key_follow = (double)(midi_bend_range) - 0.2;
+### Tweakable parameters (in application.cpp):
+Changing this to your taste may require some test and trial. 
 
-The "-0.2" could be changed into another value from "0" to "-0.5" depending on how good you are to reach center of the note that you play. "0" is for very good players. "-0.5" is very permissive and generates note toggling in 1 semitone mode. "-0.2" is the limit where my favourite chromatic tuner's green LED turns off (and it is OK for me).
+"#define VELOCITY_SENS  9" -> How easy it is to reach highest velocity (127). Something betwen 5 and 12.  
+
+"#define PLAYER_ACCURACY  0.2"  -> Pitch accuracy of player. Tolerance on note center for changing notes when playing legato. From 0 (very accurate players) to 0.5 (may generate note toggling). 
+
 
 
 ### LICENSE
