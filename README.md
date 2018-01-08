@@ -4,9 +4,7 @@
 Based on Arduino UNO Software for the Open.Theremin version 3.0  Copyright (C) 2010-2016 by Urs Gaudenz
 https://github.com/GaudiLabs/OpenTheremin_V3
 
-Urs made also a very clear presentation of previous version V1.0  of this MIDI feature on his website http://www.gaudi.ch/OpenTheremin/index.php?option=com_content&view=article&id=200&Itemid=121, many thanks ! 
-
-The software has been enhanced to V2.0 since then but there is still good applicable advises for implementation. 
+Urs made also a very clear presentation of previous version V1.0  of this MIDI feature on his website http://www.gaudi.ch/OpenTheremin/index.php?option=com_content&view=article&id=200&Itemid=121, many thanks ! The software has been enhanced to V2.0 since then but there is still good applicable advises for implementation. 
 
 ### Don't click on the files!
 Click on the "clone or download" Button to the right. Then unpack the archive.
