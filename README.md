@@ -41,22 +41,32 @@ Serial port is used to send MIDI messages now.
 
 ### How does it work ? 
 
-PITCH ANTENNA (ROD): 
+The MIDI open theremin generates NOTE ON/OFF messages and  Continuous Controler changes (MIDI CC) depending on settings and hands positions next to antennas. 
 
-It uses first note detected as hand moves away from volume loop antenna to generate a NOTE ON. 
-Then, it can use PITCH BEND messages (if activated) to reach exact pitch as long as pitch bend range will do. 
-Beyond, it can generate a new NOTE ON followed by a NOTE OFF for the previous note if legato mode activated. 
-Pitch bend range can be configured (1, 2, 7, 12 or 24 semitones) to align with synth's maximum capabilities.
 
-It can also generate selected MIDI Continuous Controler changes (MIDI CC). 
+MIDI CC: 
 
-VOLUME ANTENNA (LOOP): 
+It is possible to affect independant MIDI CCs to the PITCH ANTENNA (ROD) and to the VOLUME ANTENNA (LOOP).  
 
-It generates selected MIDI Continuous Controler changes (MIDI CC), starting NOTE ON and ending NOTE OFF (when playing staccato). 
+NOTE ON/OFF: 
 
-The volume trigger can be configured so as we have some volume at note attack on percussive sounds. 
-The volume trigger setting is also used to set sensitivity for velocity (how fast volume loop hand is moving when note is triggered). 
-Matter of fact, the higher is this setting, less margin we have for volume variation. It is compensated by increase of velocity sensitivity. 
+In MIDI standard NOTE ON/OFF messages have a NOTE NUMBER and a VELOCITY. 
+
+Let's consider a Fade-in / Picth Variation / Fade-out sequence (I use right handed convention): 
+
+1. Fade-In
+
+   When left hand moves away from VOLUME ANTENNA (LOOP) and volume crosses a settable threshold (Volume trigger), a NOTE ON is generated. VELOCITY depends on how fast left hand is moving. Right hand position next to PITCH ANTENNA (ROD) determines the starting NOTE NUMBER. 
+
+
+2. Pitch variation
+
+   When right hand move next to PITCH ANTENNA (ROD), PITCH BEND messages are generated (if activated) to reach exact pitch as long as pitch bend range will do.  Beyond, a new NOTE ON followed by a NOTE OFF for the previous note are generated if legato mode activated. Pitch bend range can be configured (1, 2, 7, 12 or 24 semitones) to align with synth's maximum capabilities. 
+
+3. Fade-Out
+
+   When left hand moves close to VOLUME ANTENNA (LOOP) and volume goes under Volume trigger threshold, a NOTE OFF is generated to mute the playing note. 
+
 
 CALIBRATION:
 
@@ -85,10 +95,13 @@ Select a Parameter and move "Parameter's Value" to change corresponding setting.
 
 The picture at https://github.com/MrDham/OpenTheremin_V3_with_MIDI/blob/master/MIDI%20Open%20Theremin%20V3%20HMI.bmp gives an example of possible HMI: on "Value" pot, red lines have 4 positions, grey lines have 5 positions and yellow lines have 8 positions. On "Parameter" pot you see coloured lines indicating which colour to follow for the "Value" pot. 
 
+The volume trigger can be configured so as we have some volume at note attack on percussive sounds. 
+The volume trigger setting is also used to set sensitivity for velocity (how fast left hand is moving when note is triggered). 
+Volume trigger = 127 (Maximum) won't generate any NOTE ON. It can be used to generate MIDI CC only.
+
 Manipulation of "Rod antenna MIDI CC" and "Loop antenna MIDI CC" is not error proof. MIDI newbies should be advised to change their value in MUTE mode. 
 
-Volume trigger = 127 (Maximum) won't generate any NOTE ON. It can be used to generate MIDI CC only. 
-
+ 
 Default configuration is: Register = Lowest Register, Timbre = 1st Waveform, Channel = MIDI Channel 1, Rod antenna mode = Legato on/Pitch Bend on, Pitch bend range = 2 Semitones, Volume trigger = 0, Rod antenna MIDI CC = None, Loop antenna MIDI CC = 7-Volume. 
 
 
