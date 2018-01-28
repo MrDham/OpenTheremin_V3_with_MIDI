@@ -56,22 +56,18 @@ Let's consider a Fade-in / Picth Variation / Fade-out sequence (I use right hand
 
 1. Fade-In
 
-   When left hand moves away from VOLUME ANTENNA (LOOP) and volume crosses a settable threshold (Volume trigger), a NOTE ON is generated. VELOCITY depends on how fast left hand is moving. Right hand position next to PITCH ANTENNA (ROD) determines the starting NOTE NUMBER. 
+   When left hand moves away from VOLUME ANTENNA (LOOP) and volume crosses a settable threshold (Volume trigger), a NOTE ON is generated. VELOCITY depends on how fast left hand is moving. Right hand's position next to PITCH ANTENNA (ROD) determines the starting NOTE NUMBER. 
 
 
 2. Pitch variation
 
-   When right hand move next to PITCH ANTENNA (ROD), PITCH BEND messages are generated (if activated) to reach exact pitch as long as pitch bend range will do.  Beyond, a new NOTE ON followed by a NOTE OFF for the previous note are generated if legato mode activated. Pitch bend range can be configured (1, 2, 7, 12 or 24 semitones) to align with synth's maximum capabilities. 
+   When right hand moves next to PITCH ANTENNA (ROD), PITCH BEND messages are generated (if activated) to reach exact pitch as long as pitch bend range will do.  Beyond, a new NOTE ON followed by a NOTE OFF for the previous note are generated if legato mode is activated. Pitch bend range can be configured (1, 2, 7, 12 or 24 semitones) to align with synth's maximum capabilities. 
 
 3. Fade-Out
 
    When left hand moves close to VOLUME ANTENNA (LOOP) and volume goes under Volume trigger threshold, a NOTE OFF is generated to mute the playing note. 
 
-
-CALIBRATION:
-
-This device runs normal calibration of antennas after pushing button for 3 seconds as per initial project
-         
+  
  SETTINGS:
  
  "Register" pot becomes "Selected Parameter" pot and have 8 positions. 
@@ -105,7 +101,6 @@ Manipulation of "Rod antenna MIDI CC" and "Loop antenna MIDI CC" is not error pr
 Default configuration is: Register = Lowest Register, Timbre = 1st Waveform, Channel = MIDI Channel 1, Rod antenna mode = Legato on/Pitch Bend on, Pitch bend range = 2 Semitones, Volume trigger = 0, Rod antenna MIDI CC = None, Loop antenna MIDI CC = 7-Volume. 
 
 
-
 MUTE BUTTON: 
 
 Sends ALL NOTE OFF on selected channel and stay in mute until it is pushed again.  
@@ -114,6 +109,9 @@ AUDIO:
 
 Audio processing from antennas to output jack, including volume and pitch pots, LEDs and button functions, is exactly the same as in open theremin V3.  You can play the Audio and the MIDI side by side. 
 
+CALIBRATION:
+
+This device runs normal calibration of antennas after pushing button for 3 seconds as per initial project
 
 ### What can I do to get a theremin like glissando?
 
