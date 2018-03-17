@@ -209,7 +209,6 @@ void Application::loop() {
   if (_state == PLAYING && HW_BUTTON_PRESSED) 
   {
     _state = CALIBRATING;
-    _midistate = MIDI_STOP;
 
     resetTimer();
   }
@@ -227,6 +226,8 @@ void Application::loop() {
          else 
          {
           HW_LED1_OFF;HW_LED2_ON;
+          _midistate = MIDI_STOP;
+
          };
          // playModeSettingSound();
     }
