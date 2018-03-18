@@ -209,7 +209,6 @@ void Application::loop() {
   if (_state == PLAYING && HW_BUTTON_PRESSED) 
   {
     _state = CALIBRATING;
-    _midistate = MIDI_STOP;
 
     resetTimer();
   }
@@ -227,6 +226,8 @@ void Application::loop() {
          else 
          {
           HW_LED1_OFF;HW_LED2_ON;
+          _midistate = MIDI_STOP;
+
          };
          // playModeSettingSound();
     }
@@ -394,6 +395,7 @@ pitchfn1 = GetPitchMeasurement()-pitchfn;
 
 pitchXn2=pitchXn1-((pitchXn1-pitchXn0)*pitchfn1)/(pitchfn1-pitchfn0); // new DAC value
 
+delay(100);
 
 
 pitchXn0 = pitchXn1;
@@ -458,7 +460,7 @@ volumefn1 = GetVolumeMeasurement()-volumefn;
 
 volumeXn2=volumeXn1-((volumeXn1-volumeXn0)*volumefn1)/(volumefn1-volumefn0); // calculate new DAC value
 
-
+delay_NOP(44316);//44316=100ms
 
 volumeXn0 = volumeXn1;
 volumeXn1 = volumeXn2;
