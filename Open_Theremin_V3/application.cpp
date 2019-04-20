@@ -549,20 +549,27 @@ void Application::midi_application ()
   delta_loop_cc_val = (double)new_midi_loop_cc_val - (double)old_midi_loop_cc_val;
 
   // Calculate log freq 
-  if (vPointerIncrement < 18) 
-  {
-    // Highest note
-    double_log_freq = 0; 
-  }
-  else if (vPointerIncrement > 26315) 
+  if ((vPointerIncrement < 18) || (vPointerIncrement > 65518)) 
   {
     // Lowest note
+    double_log_freq = 0; 
+  }
+  else if ((vPointerIncrement > 26315) && (vPointerIncrement < 39221))
+  {
+    // Highest note
     double_log_freq = 127; 
+  }
+  else if (vPointerIncrement < 32768)
+  {
+    // Positive frequencies
+    // Find note in the playing range
+    double_log_freq = (log (vPointerIncrement/17.152) / 0.057762265); // Precise note played in the logaritmic scale
   }
   else
   {
+    // Negative frequencies
     // Find note in the playing range
-    double_log_freq = (log (vPointerIncrement/17.152) / 0.057762265); // Precise note played in the logaritmic scale
+    double_log_freq = (log ((65535-vPointerIncrement+1)/17.152) / 0.057762265); // Precise note played in the logaritmic scale
   }
   
   // Calculate rod antena cc value for midi 
