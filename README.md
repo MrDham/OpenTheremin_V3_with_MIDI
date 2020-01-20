@@ -131,7 +131,7 @@ Legato mode is used as a workaround for a limitation of MIDI (max 24 semitones p
 ### With Legato Mode = ON and Pitch Bend Mode = OFF, the notes generated don't seem to be in a given scale. For example I can't play in C major if I select Pitch Bend Range = 2.
 Effectively according to the sequence described above (Fade-in / Picth Variation / Fade-out), the first note played influences the next notes played: they will always be distant of N * Pitch Bend Range. For example, with Pitch Bend Range = 2, if you start with a C and move the right hand, you can only play C, D, E, F#, G#, A#. This is as designed. 
 
-If you want to play in a given scale you need to set Legato Mode = ON, Pitch Bend Mode = OFF, Pitch Bend Range = 1 and to use a synth with a "force to scale" capacity (Some plugins can do that, for example http://www.thepiz.org/plugins/?p=pizmidi midiForceToKey). Then select the expected scale and play. Out of scale notes will be replaced by the closest one in the scale. 
+If you want to play in a given scale you need to set Legato Mode = ON, Pitch Bend Mode = OFF, Pitch Bend Range = 1 and to use a synth with a "force to scale" capacity. Then select the expected scale and play. Out of scale notes will be replaced by the closest one in the scale. 
 
 ### Tweakable parameters (in application.cpp):
 Changing this to your taste may require some test and trial. 
