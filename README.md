@@ -146,7 +146,7 @@ I'll try to answer you if I can.
 
 
 ### LICENSE
-Original project written by Urs Gaudenz, GaudiLabs, 2016
+Original project ,Open Theremin, was written by Urs Gaudenz, GaudiLabs, in 2016
 GNU license. This Project inherits this 2016 GNU License. 
 
  Check LICENSE file for more information
