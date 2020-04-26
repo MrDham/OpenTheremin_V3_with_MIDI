@@ -3,7 +3,7 @@
 #include "application.h"
 
 #include "hw.h"
-#include "mcpDac.h"
+#include "SPImcpDAC.h"
 #include "ihandlers.h"
 #include "timer.h"
 #include "EEPROM.h"
@@ -32,6 +32,7 @@ static uint8_t old_midi_loop_cc_val =0;
 
 static uint8_t midi_velocity = 0;
 
+static uint8_t loop_hand_pos = 0; 
 static uint8_t new_midi_rod_cc_val =0;
 static uint8_t old_midi_rod_cc_val =0;
 
@@ -77,13 +78,13 @@ void Application::setup() {
 
   digitalWrite(Application::LED_PIN_1, HIGH);    // turn the LED off by making the voltage LOW
 
-   mcpDacInit();
+   SPImcpDACinit();
 
 EEPROM.get(0,pitchDAC);
 EEPROM.get(2,volumeDAC);
 
-mcpDac2ASend(pitchDAC);
-mcpDac2BSend(volumeDAC);
+SPImcpDAC2Asend(pitchDAC);
+SPImcpDAC2Bsend(volumeDAC);
 
   
 initialiseTimer();
@@ -195,6 +196,7 @@ AppMode Application::nextMode() {
 void Application::loop() {
   int32_t pitch_v = 0, pitch_l = 0;            // Last value of pitch  (for filtering)
   int32_t vol_v = 0,   vol_l = 0;              // Last value of volume (for filtering)
+  uint16_t tmpVolume;
 
   uint16_t volumePotValue = 0;
   uint16_t pitchPotValue = 0;
@@ -281,7 +283,7 @@ void Application::loop() {
     // set wave frequency for each mode
     switch (_mode) {
       case MUTE : /* NOTHING! */;                                        break;
-      case NORMAL      : setWavetableSampleAdvance((pitchCalibrationBase-pitch_v)/registerValue+2048-(pitchPotValue<<2)); break;
+      case NORMAL      : setWavetableSampleAdvance(((pitchCalibrationBase-pitch_v)+2048-(pitchPotValue<<2))/registerValue); break;
     };
     
   //  HW_LED2_OFF;
@@ -306,8 +308,11 @@ void Application::loop() {
     //    vol_v = vol_v - (1 + MAX_VOLUME - (volumePotValue << 2));
     vol_v = vol_v ;
     vol_v = max(vol_v, 0);
-    vScaledVolume = vol_v >> 4;
+    loop_hand_pos = vol_v >> 4;
 
+    // Give vScaledVolume a pseudo-exponential characteristic:
+    vScaledVolume = loop_hand_pos * (loop_hand_pos + 2);
+    
     volumeValueAvailable = false;
   }
 
@@ -359,7 +364,7 @@ static long pitchfn = 0;
   
   InitialisePitchMeasurement();
   interrupts();
-  mcpDacInit();
+  SPImcpDACinit();
 
   qMeasurement = GetQMeasurement();  // Measure Arudino clock frequency 
 
@@ -372,24 +377,24 @@ pitchfn = q0-PitchFreqOffset;        // Add offset calue to set frequency
 
 
 
-mcpDac2BSend(1600);
+SPImcpDAC2Bsend(1600);
 
-mcpDac2ASend(pitchXn0);
+SPImcpDAC2Asend(pitchXn0);
 delay(100);
 pitchfn0 = GetPitchMeasurement();
 
-mcpDac2ASend(pitchXn1);
+SPImcpDAC2Asend(pitchXn1);
 delay(100);
 pitchfn1 = GetPitchMeasurement();
 
  
 while(abs(pitchfn0-pitchfn1)>CalibrationTolerance){      // max allowed pitch frequency offset
 
-mcpDac2ASend(pitchXn0);
+SPImcpDAC2Asend(pitchXn0);
 delay(100);
 pitchfn0 = GetPitchMeasurement()-pitchfn;
 
-mcpDac2ASend(pitchXn1);
+SPImcpDAC2Asend(pitchXn1);
 delay(100);
 pitchfn1 = GetPitchMeasurement()-pitchfn;
 
@@ -425,7 +430,7 @@ static long volumefn = 0;
     
   InitialiseVolumeMeasurement();
   interrupts();
-  mcpDacInit();
+  SPImcpDACinit();
 
 
 volumeXn0 = 0;
@@ -436,12 +441,12 @@ volumefn = q0-VolumeFreqOffset;
 
 
 
-mcpDac2BSend(volumeXn0);
+SPImcpDAC2Bsend(volumeXn0);
 delay_NOP(44316);//44316=100ms
 
 volumefn0 = GetVolumeMeasurement();
 
-mcpDac2BSend(volumeXn1);
+SPImcpDAC2Bsend(volumeXn1);
 
 delay_NOP(44316);//44316=100ms
 volumefn1 = GetVolumeMeasurement();
@@ -450,11 +455,11 @@ volumefn1 = GetVolumeMeasurement();
 
 while(abs(volumefn0-volumefn1)>CalibrationTolerance){
 
-mcpDac2BSend(volumeXn0);
+SPImcpDAC2Bsend(volumeXn0);
 delay_NOP(44316);//44316=100ms
 volumefn0 = GetVolumeMeasurement()-volumefn;
 
-mcpDac2BSend(volumeXn1);
+SPImcpDAC2Bsend(volumeXn1);
 delay_NOP(44316);//44316=100ms
 volumefn1 = GetVolumeMeasurement()-volumefn;
 
@@ -478,7 +483,7 @@ void Application::hzToAddVal(float hz) {
 }
 
 void Application::playNote(float hz, uint16_t milliseconds = 500, uint8_t volume = 255) {
-  vScaledVolume = volume;
+  vScaledVolume = volume * (volume + 2);
   hzToAddVal(hz);
   millitimer(milliseconds);
   vScaledVolume = 0;
@@ -544,7 +549,7 @@ void Application::midi_application ()
   
   
   // Calculate loop antena cc value for midi 
-  new_midi_loop_cc_val = vScaledVolume >> 1; 
+  new_midi_loop_cc_val = loop_hand_pos >> 1; 
   new_midi_loop_cc_val = min (new_midi_loop_cc_val, 127);
   delta_loop_cc_val = (double)new_midi_loop_cc_val - (double)old_midi_loop_cc_val;
 
