@@ -3,7 +3,7 @@
 
 extern volatile uint16_t pitch;              // Pitch value
 extern volatile uint16_t vol;                // Volume value
-extern volatile uint8_t  vScaledVolume;      // Volume byte
+extern volatile uint16_t vScaledVolume;      // Volume byte
 
 extern volatile uint16_t pitch_counter;      // Pitch counter
 extern volatile uint16_t pitch_counter_l;    // Last value of pitch counter

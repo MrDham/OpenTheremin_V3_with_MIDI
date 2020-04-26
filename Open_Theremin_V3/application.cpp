@@ -196,7 +196,6 @@ AppMode Application::nextMode() {
 void Application::loop() {
   int32_t pitch_v = 0, pitch_l = 0;            // Last value of pitch  (for filtering)
   int32_t vol_v = 0,   vol_l = 0;              // Last value of volume (for filtering)
-  uint16_t tmpVolume;
 
   uint16_t volumePotValue = 0;
   uint16_t pitchPotValue = 0;
