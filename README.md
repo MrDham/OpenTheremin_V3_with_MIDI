@@ -1,10 +1,20 @@
-## Open Theremin V3 with MIDI interface control software V2.0 for Arduino UNO 
+## Open Theremin V3 with MIDI interface control software V2.3 for Arduino UNO 
 
 
 Based on Arduino UNO Software for the Open.Theremin version 3.0  Copyright (C) 2010-2016 by Urs Gaudenz
 https://github.com/GaudiLabs/OpenTheremin_V3
 
-Urs also made a very clear presentation of this MIDI feature on his website: http://www.gaudi.ch/OpenTheremin/index.php?option=com_content&view=article&id=200&Itemid=121, many thanks !  
+This Open Theremin V3 with MIDI version V2.3 also takes into account 
+Changes added in Open.Theremin version 3.1 (all by @Theremingenieur):
+
+    Fix a wavetable addressing issue (found by @miguelfreitas)
+    Use the Arduino's hardware SPI to control the DACS and use the Latch signal to reduce audio jitter
+    Improve the register switch to keep the tone spacing and pitch tuning consistent
+    Improve the audio volume response to give a smoother start and wider dynamics (*)
+
+(*) This relies on a recent gcc compiler version. Make sure to compile it with the Arduino IDE >= 1.8.10
+
+Urs also made a very clear presentation of the MIDI feature on his website: http://www.gaudi.ch/OpenTheremin/index.php?option=com_content&view=article&id=200&Itemid=121, many thanks !  
 
 ### Don't click on the files!
 Click on the "clone or download" Button to the right. Then unpack the archive.
