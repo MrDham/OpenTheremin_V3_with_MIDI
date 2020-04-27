@@ -9,8 +9,8 @@ Changes added in Open.Theremin version 3.1 (all by @Theremingenieur):
 
     Fix a wavetable addressing issue (found by @miguelfreitas)
     Use the Arduino's hardware SPI to control the DACS and use the Latch signal to reduce audio jitter
-    Improve the register switch to keep the tone spacing and pitch tuning consistent
-    Improve the audio volume response to give a smoother start and wider dynamics (*)
+    Improve the register switch to transpose by clean octaves and keep the tone spacing and pitch tuning consistent
+    Improve the volume response to give a smoother start and wider dynamics (*)
 
 (*) This relies on a recent gcc compiler version. Make sure to compile it with the Arduino IDE >= 1.8.10
 
