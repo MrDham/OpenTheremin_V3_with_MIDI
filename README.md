@@ -14,6 +14,8 @@ Changes added in Open.Theremin version 3.1 (all by @Theremingenieur):
 
 (*) This relies on a recent gcc compiler version. Make sure to compile it with the Arduino IDE >= 1.8.10
 
+Pitch Bend Range choice is also extended (Allows 4 octaves Bend) 
+
 Urs also made a very clear presentation of the MIDI feature on his website: http://www.gaudi.ch/OpenTheremin/index.php?option=com_content&view=article&id=200&Itemid=121, many thanks !  
 
 ### Don't click on the files!
@@ -85,12 +87,12 @@ Let's consider a Fade-in / Picth Variation / Fade-out sequence (I use right hand
  "Register" pot becomes "Selected Parameter" pot and have 8 positions. 
   "Timbre" pot becomes "Parameter's Value" and have a variable number of positions depending on selected parameter: 
  
- 1. Register: 4 positions as in original Open Theremin V3
+ 1. Register: 3 positions (-1 Octave, center, +1 Octave) as in original Open Theremin V3 (version V3.1)
  2. Timbre: 8 positions as in original Open Theremin V3
  3. Channel: 16 positions (channel 1 to 16)
  4. Rod antenna mode: 4 positions 
      (Legato off/Pitch Bend off, Legato off/Pitch Bend on, Legato on/Pitch Bend off, Legato on/Pitch Bend on)
- 5. Pitch bend range: 5 positions (1, 2, 7, 12, 24 Semitones). 
+ 5. Pitch bend range: 8 positions (1, 2, 4, 5, 7, 12, 24, 48 Semitones). 
      For classical glissando and in order to have same note on audio and MIDI, use exactly same pitch bend range on your synth. 
      Maximum setting possible is recomended.
  6. Volume trigger / Velocity sensitivity (how fast moves the volume loop's hand): 128 positions (0 to 127)
@@ -111,7 +113,7 @@ Volume trigger = 127 (Maximum) won't generate any NOTE ON. It can be used to gen
 Manipulation of "Rod antenna MIDI CC" and "Loop antenna MIDI CC" is not error proof. MIDI newbies should be advised to change their value in MUTE mode. 
 
  
-Default configuration is: Register = Lowest Register, Timbre = 1st Waveform, Channel = MIDI Channel 1, Rod antenna mode = Legato on/Pitch Bend on, Pitch bend range = 2 Semitones, Volume trigger = 0, Rod antenna MIDI CC = None, Loop antenna MIDI CC = 7-Volume. 
+Default configuration is: Register = Center, Timbre = 1st Waveform, Channel = MIDI Channel 1, Rod antenna mode = Legato on/Pitch Bend on, Pitch bend range = 2 Semitones, Volume trigger = 0, Rod antenna MIDI CC = None, Loop antenna MIDI CC = 7-Volume. 
 
 
 MUTE BUTTON: 
