@@ -45,7 +45,7 @@ static double double_log_freq = 0;
 static double midi_key_follow = 0.5;
       
 // Configuration parameters
-static uint8_t registerValue = 4;
+static uint8_t registerValue = 2;
   // wavetable selector is defined and initialized in ihandlers.cpp
 static uint8_t midi_channel = 0;
 static uint8_t old_midi_channel = 0;
@@ -857,7 +857,7 @@ void Application::set_parameters ()
         break;  
       }
       break;
-        
+      
     case 4:
       // Pitch bend range
       switch (data_pot_value >> 7)
