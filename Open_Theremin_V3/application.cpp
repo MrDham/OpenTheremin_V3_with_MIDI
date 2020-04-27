@@ -282,7 +282,7 @@ void Application::loop() {
     // set wave frequency for each mode
     switch (_mode) {
       case MUTE : /* NOTHING! */;                                        break;
-      case NORMAL      : setWavetableSampleAdvance(((pitchCalibrationBase-pitch_v)+2048-(pitchPotValue<<2))/registerValue); break;
+      case NORMAL      : setWavetableSampleAdvance(((pitchCalibrationBase-pitch_v)+2048-(pitchPotValue<<2))>>registerValue); break;
     };
     
   //  HW_LED2_OFF;
@@ -801,9 +801,21 @@ void Application::set_parameters ()
     {
     case 0:
       // Transpose
-      registerValue=4-(data_pot_value>>8);  
-      break; 
-
+      switch (data_pot_value >> 8)
+      {
+      case 0:
+        registerValue=3; // -1 Octave
+        break; 
+      case 1:
+      case 2:
+        registerValue=2; // Center
+        break; 
+      default:
+        registerValue=1; // +1 Octave 
+        break; 
+      }
+      break;
+      
     case 1:
       // Waveform
       vWavetableSelector=data_pot_value>>7;
@@ -852,21 +864,27 @@ void Application::set_parameters ()
       {
       case 0:
         midi_bend_range = 1; 
-      break; 
+        break; 
       case 1:
-      case 2:
         midi_bend_range = 2; 
         break; 
+      case 2:
+        midi_bend_range = 4; 
+        break; 
       case 3:
+        midi_bend_range = 5; 
+        break; 
       case 4:
         midi_bend_range = 7; 
         break; 
       case 5:
-      case 6:
         midi_bend_range = 12; 
         break; 
-      default:
+      case 6:
         midi_bend_range = 24; 
+        break;  
+      default:
+        midi_bend_range = 48; 
         break;  
       }
       break;
