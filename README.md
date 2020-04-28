@@ -75,7 +75,7 @@ Let's consider a Fade-in / Picth Variation / Fade-out sequence (I use right hand
 
 2. Pitch variation
 
-   When right hand moves next to PITCH ANTENNA (ROD), PITCH BEND messages are generated (if activated) to reach exact pitch as long as pitch bend range will do.  Beyond, a new NOTE ON followed by a NOTE OFF for the previous note are generated if legato mode is activated. Pitch bend range can be configured (1, 2, 7, 12 or 24 semitones) to align with synth's maximum capabilities. 
+   When right hand moves next to PITCH ANTENNA (ROD), PITCH BEND messages are generated (if activated) to reach exact pitch as long as pitch bend range will do.  Beyond, a new NOTE ON followed by a NOTE OFF for the previous note are generated if legato mode is activated. Pitch bend range can be configured (1, 2, 4, 5, 7, 12, 24 or 48 semitones) to align with synth's maximum capabilities. 
 
 3. Fade-Out
 
@@ -158,7 +158,7 @@ I'll try to answer you if I can.
 
 
 ### LICENSE
-Original project ,Open Theremin, was written by Urs Gaudenz, GaudiLabs, in 2016
+Original project, Open Theremin, was written by Urs Gaudenz, GaudiLabs, in 2016
 GNU license. This Project inherits this 2016 GNU License. 
 
  Check LICENSE file for more information
