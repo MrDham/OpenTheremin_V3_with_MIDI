@@ -1,6 +1,8 @@
 /*
  *  Open Theremin V3 with MIDI interface control software for Arduino UNO 
  *  Based on Open Theremin V3 version 3.0  Copyright (C) 2010-2016 by Urs Gaudenz
+ *   
+ *  Also integrate changes from Open Theremin V3 Version 3.1  Copyright (C) 2010-2020 by Urs Gaudenz
  *
  *
  *  Open Theremin V3 with MIDI interface control software is free software: 
@@ -19,9 +21,10 @@
  *  the Open Theremin V3 with MIDI interface control software.  
  *  If not, see <http://www.gnu.org/licenses/>.
  *
- *  Urs Gaudenz also credits for their important contributions to Open Theremin V3: 
+ *  Also credited for their important contributions to Open Theremin V3: 
  *  David Harvey
  *  Michael Margolis
+ *  "Theremingenieur" Thierry Frenkel
  */
 
 /* Midi added by Vincent Dhamelincourt - September 2017. 
