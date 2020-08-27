@@ -55,7 +55,7 @@ Serial port is used to send MIDI messages now.
 
 ### How does it work ? 
 
-The MIDI open theremin generates NOTE ON/OFF messages and  Continuous Controler changes (MIDI CC) depending on settings and hands positions next to antennas. 
+The MIDI open theremin generates NOTE ON/OFF messages and  Continuous Controler changes (MIDI CC) depending on settings and hands' position next to antennas. 
 
 
 MIDI CC: 
@@ -104,7 +104,7 @@ Let's consider a Fade-in / Picth Variation / Fade-out sequence (I use right hand
 Select a Parameter and move "Parameter's Value" to change corresponding setting. 
 
 The picture at https://github.com/MrDham/OpenTheremin_V3_with_MIDI/blob/master/MIDI%20Open%20Theremin%20V3%20HMI.bmp gives an example of possible HMI: on "Value" pot, red lines have 4 positions, grey lines have 5 positions and yellow lines have 8 positions. On "Parameter" pot you see coloured lines indicating which colour to follow for the "Value" pot. 
-The Quick Guide at https://github.com/MrDham/OpenTheremin_V3_with_MIDI/blob/master/Quick%20guide%20open%20theremin%20midi.bmp works well with this HMI. Print it on a portrait A4 sheet of paper, plastify it and take it with you theremin everywhere you go... 
+The Quick Guide at https://github.com/MrDham/OpenTheremin_V3_with_MIDI/blob/master/Quick%20guide%20open%20theremin%20midi.bmp works well with this HMI. Print it on a portrait A4 sheet of paper, plastify it and take it with your theremin everywhere you go... 
 
 The volume trigger can be configured so as we have some volume at note attack on percussive sounds. 
 The volume trigger setting is also used to set sensitivity for velocity (how fast left hand is moving when note is triggered). 
