@@ -33,8 +33,9 @@ static uint8_t old_midi_loop_cc_val =0;
 static uint8_t midi_velocity = 0;
 
 static uint8_t loop_hand_pos = 0; 
-static uint8_t new_midi_rod_cc_val =0;
-static uint8_t old_midi_rod_cc_val =0;
+
+static uint16_t new_midi_rod_cc_val =0;
+static uint16_t old_midi_rod_cc_val =0;
 
 static uint16_t new_midi_bend =0;
 static uint16_t old_midi_bend = 0;
@@ -55,6 +56,7 @@ static uint8_t flag_legato_on = 1;
 static uint8_t flag_pitch_bend_on = 1;
 static uint8_t loop_midi_cc = 7;
 static uint8_t rod_midi_cc = 255; 
+static uint8_t rod_midi_cc_lo = 255; 
 
 // tweakable paramameters
 #define VELOCITY_SENS  9 // How easy it is to reach highest velocity (127). Something betwen 5 and 12.
@@ -518,8 +520,8 @@ void Application::delay_NOP(unsigned long time) {
 void Application::midi_setup() 
 {
   // Set MIDI baud rate:
-  Serial.begin(115200); // Baudrate for midi to serial. Use a serial to midi router http://projectgus.github.com/hairless-midiserial/
-  //Serial.begin(31250); // Baudrate for real midi. Use din connection https://www.arduino.cc/en/Tutorial/Midi or HIDUINO https://github.com/ddiakopoulos/hiduino
+  //Serial.begin(115200); // Baudrate for midi to serial. Use a serial to midi router http://projectgus.github.com/hairless-midiserial/
+  Serial.begin(31250); // Baudrate for real midi. Use din connection https://www.arduino.cc/en/Tutorial/Midi or HIDUINO https://github.com/ddiakopoulos/hiduino
 
   _midistate = MIDI_SILENT; 
 }
@@ -577,7 +579,7 @@ void Application::midi_application ()
   }
   
   // Calculate rod antena cc value for midi 
-  new_midi_rod_cc_val = round (double_log_freq);
+  new_midi_rod_cc_val = round (double_log_freq * 128); // 14 bit value !
 
   // State machine for MIDI
   switch (_midistate)
@@ -595,9 +597,16 @@ void Application::midi_application ()
     }
 
     // Always refresh midi rod antena cc if applicable. 
-    if ((rod_midi_cc != 255) && (new_midi_rod_cc_val != old_midi_rod_cc_val))
+    if (new_midi_rod_cc_val != old_midi_rod_cc_val)
     {
-      midi_msg_send(midi_channel, 0xB0, rod_midi_cc, new_midi_rod_cc_val);
+      if (rod_midi_cc != 255) 
+      {
+        if (rod_midi_cc_lo != 255)
+        {
+          midi_msg_send(midi_channel, 0xB0, rod_midi_cc_lo, (uint8_t)(new_midi_rod_cc_val & 0x007F)); 
+        }
+        midi_msg_send(midi_channel, 0xB0, rod_midi_cc, (uint8_t)(new_midi_rod_cc_val >> 7));
+      }
       old_midi_rod_cc_val = new_midi_rod_cc_val;
     }
     else
@@ -656,9 +665,16 @@ void Application::midi_application ()
     }
 
     // Always refresh midi rod antena cc if applicable. 
-    if ((rod_midi_cc != 255) && (new_midi_rod_cc_val != old_midi_rod_cc_val))
+    if (new_midi_rod_cc_val != old_midi_rod_cc_val)
     {
-      midi_msg_send(midi_channel, 0xB0, rod_midi_cc, new_midi_rod_cc_val);
+      if (rod_midi_cc != 255) 
+      {
+        if (rod_midi_cc_lo != 255)
+        {
+          midi_msg_send(midi_channel, 0xB0, rod_midi_cc_lo, (uint8_t)(new_midi_rod_cc_val & 0x007F)); 
+        }
+        midi_msg_send(midi_channel, 0xB0, rod_midi_cc, (uint8_t)(new_midi_rod_cc_val >> 7));
+      }
       old_midi_rod_cc_val = new_midi_rod_cc_val;
     }
     else
@@ -900,21 +916,26 @@ void Application::set_parameters ()
       {
       case 0:
         rod_midi_cc = 255; // Nothing
+        rod_midi_cc_lo = 255; // Nothing
         break; 
       case 1:
       case 2:
         rod_midi_cc = 8; // Balance
+        rod_midi_cc_lo = 40; // Balance least significant bits
         break; 
       case 3:
       case 4:
         rod_midi_cc = 10; // Pan
+        rod_midi_cc_lo = 42; // Pan least significant bits
         break; 
       case 5:
       case 6:
         rod_midi_cc = 16; // Ribbon Controler
+        rod_midi_cc_lo = 48; // Ribbon Controler least significant bits
         break; 
       default:
         rod_midi_cc = 74; // Cutoff (exists of both loop and rod)
+        rod_midi_cc_lo = 255; // No least significant bits
         break; 
       }
       break;
