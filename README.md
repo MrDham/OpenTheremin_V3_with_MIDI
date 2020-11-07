@@ -1,10 +1,10 @@
-## Open Theremin V3 with MIDI interface control software V2.3 for Arduino UNO 
+## Open Theremin V3 with MIDI interface control software V2.4 for Arduino UNO 
 
 
 Based on Arduino UNO Software for the Open.Theremin version 3.0  Copyright (C) 2010-2016 by Urs Gaudenz
 https://github.com/GaudiLabs/OpenTheremin_V3
 
-This Open Theremin V3 with MIDI version V2.3 also takes into account 
+This Open Theremin V3 with MIDI version V2.4 also takes into account 
 Changes added in Open.Theremin version 3.1 (all by @Theremingenieur):
 
     Fix a wavetable addressing issue (found by @miguelfreitas)
@@ -15,6 +15,8 @@ Changes added in Open.Theremin version 3.1 (all by @Theremingenieur):
 (*) This relies on a recent gcc compiler version. Make sure to compile it with the Arduino IDE >= 1.8.10
 
 Pitch Bend Range choice is also extended (Allows 4 octaves Bend) 
+
+MIDI CC from Pitch antenna (Rod) have 14 Bit resolution when applicable. Example of application: you can create a software synth controled with CC7 for volume and CC16 (MSB) - CC48 (LSB) for pitch without using Note On/Off and Pitch Bend messages. 
 
 Urs also made a very clear presentation of the MIDI feature on his website: http://www.gaudi.ch/OpenTheremin/index.php?option=com_content&view=article&id=200&Itemid=121, many thanks !  
 
