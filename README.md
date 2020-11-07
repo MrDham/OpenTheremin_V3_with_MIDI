@@ -1,10 +1,10 @@
-## Open Theremin V3 with MIDI interface control software V2.3 for Arduino UNO 
+## Open Theremin V3 with MIDI interface control software V2.4 for Arduino UNO 
 
 
 Based on Arduino UNO Software for the Open.Theremin version 3.0  Copyright (C) 2010-2016 by Urs Gaudenz
 https://github.com/GaudiLabs/OpenTheremin_V3
 
-This Open Theremin V3 with MIDI version V2.3 also takes into account 
+This Open Theremin V3 with MIDI version V2.4 also takes into account 
 Changes added in Open.Theremin version 3.1 (all by @Theremingenieur):
 
     Fix a wavetable addressing issue (found by @miguelfreitas)
@@ -15,6 +15,8 @@ Changes added in Open.Theremin version 3.1 (all by @Theremingenieur):
 (*) This relies on a recent gcc compiler version. Make sure to compile it with the Arduino IDE >= 1.8.10
 
 Pitch Bend Range choice is also extended (Allows 4 octaves Bend) 
+
+MIDI CC from Pitch antenna (Rod) have 14 Bit resolution when applicable. Example of application: you can create a software synth controled by CC7 for volume and CC16 (MSB) - CC48 (LSB) for pitch without using Note On/Off and Pitch Bend messages. 
 
 Urs also made a very clear presentation of the MIDI feature on his website: http://www.gaudi.ch/OpenTheremin/index.php?option=com_content&view=article&id=200&Itemid=121, many thanks !  
 
@@ -97,7 +99,7 @@ Let's consider a Fade-in / Picth Variation / Fade-out sequence (I use right hand
      Maximum setting possible is recomended.
  6. Volume trigger / Velocity sensitivity (how fast moves the volume loop's hand): 128 positions (0 to 127)
  7. Rod antenna MIDI CC: 5 positions 
-    (None, 8-Balance, 10-Pan, 16-Ribbon controler, 74-cutoff)
+    (None, 8-MSB/40-LSB-Balance, 10-MSB/42-LSB-Pan, 16-MSB/48-LSB-Ribbon controler, 74-cutoff) 14 Bit messages are sent in the following order: LSB (1st), MSB (2nd). 
  8. Loop antenna MIDI CC: 8 positions 
     (1-Modulation, 7-Volume, 11-Expression, 71-Resonnance, 74-Cutoff, 91-Reverb, 93-Chorus, 95-Phaser)
 
