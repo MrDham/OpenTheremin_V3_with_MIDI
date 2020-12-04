@@ -140,7 +140,7 @@ Set pitch bend range of the synth with the same value.
 
 When legato mode is activated, if you trigger a note (with volume loop) and go in one direction (with pitch antenna) a new note will be triggered at the limit of pitch bend range. 
 
-Legato mode is used as a workaround for a limitation of MIDI (max 24 semitones pitch bend). Maybe some synth can perform pitch bend on more that 2 octaves but none of mine does...
+Legato mode is used as a workaround for limitation of Pitch Bend range on some synths (e.g. max 12 semitones pitch bend). 
 
 ### With Legato Mode = ON and Pitch Bend Mode = OFF, the notes generated don't seem to be in a given scale. For example I can't play in C major if I select Pitch Bend Range = 2.
 Effectively according to the sequence described above (Fade-in / Picth Variation / Fade-out), the first note played influences the next notes played: they will always be distant of N * Pitch Bend Range. For example, with Pitch Bend Range = 2, if you start with a C and move the right hand, you can only play C, D, E, F#, G#, A#. This is as designed. 
