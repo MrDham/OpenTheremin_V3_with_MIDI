@@ -36,7 +36,7 @@ This githup repository provides the code to add a MIDI interface to the Open The
 ### Installation
 1. Open up the Arduino IDE
 2. Open the File "Open_Theremin_V3.ino"
-3. In "Application.cpp", take care of selecting MIDI mode that correponds to your cituation (put "//" in front off inadequate line - MIDI through serial is selected by default here):
+3. Important Step !  In "Application.cpp", take care of selecting MIDI mode that correponds to your cituation (put "//" in front off inadequate line - MIDI through serial is selected by default here):
 
    Serial.begin(115200); // Baudrate for midi to serial. Use a serial to midi router http://projectgus.github.com/hairless-midiserial/
   
@@ -143,9 +143,12 @@ When legato mode is activated, if you trigger a note (with volume loop) and go i
 Legato mode is used as a workaround for limitation of Pitch Bend range on some synths (e.g. max 12 semitones pitch bend). 
 
 ### With Legato Mode = ON and Pitch Bend Mode = OFF, the notes generated don't seem to be in a given scale. For example I can't play in C major if I select Pitch Bend Range = 2.
-Effectively according to the sequence described above (Fade-in / Picth Variation / Fade-out), the first note played influences the next notes played: they will always be distant of N * Pitch Bend Range. For example, with Pitch Bend Range = 2, if you start with a C and move the right hand, you can only play C, D, E, F#, G#, A#. This is as designed. 
+Effectively, according to the sequence described above (Fade-in / Picth Variation / Fade-out), the first note played influences the next notes played: they will always be distant of N * Pitch Bend Range. For example, with Pitch Bend Range = 2, if you start with a C and move the right hand, you can only play C, D, E, F#, G#, A#. This is as designed. 
 
 If you want to play in a given scale you need to set Legato Mode = ON, Pitch Bend Mode = OFF, Pitch Bend Range = 1 and to use a synth with a "force to scale" capacity. Then select the expected scale and play. Out of scale notes will be replaced by the closest one in the scale. 
+
+### What is the problem if MIDI messages appear to be messy and inconsistent resulting in strange note played, strange synth parameter changes, ... ?
+Most probable cause is that incorrect Baudrate was selected (see "Installation" step 3 )
 
 ### Tweakable parameters (in application.cpp):
 Changing this to your taste may require some test and trial. 
