@@ -98,8 +98,10 @@ Let's consider a Fade-in / Picth Variation / Fade-out sequence (I use right hand
      For classical glissando and in order to have same note on audio and MIDI, use exactly same pitch bend range on your synth. 
      Maximum setting possible is recomended.
  6. Volume trigger / Velocity sensitivity (how fast moves the volume loop's hand): 128 positions (0 to 127)
- 7. Rod antenna MIDI CC: 5 positions 
-    (None, 8-MSB/40-LSB-Balance, 10-MSB/42-LSB-Pan, 16-MSB/48-LSB-Ribbon controler, 74-cutoff) 14 Bit messages are sent in the following order: LSB (1st), MSB (2nd). 
+ 7. Rod antenna MIDI CC: 8 positions 
+    (None, 8-Balance, 10-Pan, 16-MSB/48-LSB-GeneralPurpose-1, 17-MSB/49-LSB-GeneralPurpose-2, 18-GeneralPurpose-3, 19-GeneralPurpose-4, 74-cutoff) 
+    
+    14 Bit messages are sent in the following order: LSB (1st), MSB (2nd). 
  8. Loop antenna MIDI CC: 8 positions 
     (1-Modulation, 7-Volume, 11-Expression, 71-Resonnance, 74-Cutoff, 91-Reverb, 93-Chorus, 95-Phaser)
 

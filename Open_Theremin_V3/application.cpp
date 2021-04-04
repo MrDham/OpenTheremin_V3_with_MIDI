@@ -919,19 +919,28 @@ void Application::set_parameters ()
         rod_midi_cc_lo = 255; // Nothing
         break; 
       case 1:
-      case 2:
         rod_midi_cc = 8; // Balance
-        rod_midi_cc_lo = 40; // Balance least significant bits
+        rod_midi_cc_lo = 255; // No least significant bits
+        break; 
+      case 2:
+        rod_midi_cc = 10; // Pan
+        rod_midi_cc_lo = 255; // No least significant bits
         break; 
       case 3:
+        rod_midi_cc = 16; // General Purpose 1 (14 Bits)
+        rod_midi_cc_lo = 48; // General Purpose 1 least significant bits
+        break; 
       case 4:
-        rod_midi_cc = 10; // Pan
-        rod_midi_cc_lo = 42; // Pan least significant bits
+        rod_midi_cc = 17; // General Purpose 2 (14 Bits)
+        rod_midi_cc_lo = 49; // General Purpose 2 least significant bits
         break; 
       case 5:
+        rod_midi_cc = 18; // General Purpose 3 (7 Bits)
+        rod_midi_cc_lo = 255; // No least significant bits
+        break; 
       case 6:
-        rod_midi_cc = 16; // Ribbon Controler
-        rod_midi_cc_lo = 48; // Ribbon Controler least significant bits
+        rod_midi_cc = 19; // General Purpose 4 (7 Bits)
+        rod_midi_cc_lo = 255; // No least significant bits
         break; 
       default:
         rod_midi_cc = 74; // Cutoff (exists of both loop and rod)
