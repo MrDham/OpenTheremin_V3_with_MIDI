@@ -542,7 +542,6 @@ void Application::midi_msg_send(uint8_t channel, uint8_t midi_cmd1, uint8_t midi
 // Calibrate pitch bend and other parameters accordingly to the receiver synth (see midi_calibrate). 
 // New notes won't be generated as long as pitch bend will do the job. 
 // The bigger is synth's pitch bend range the beter is the effect.  
-// If pitch bend range = 1 no picth bend is generated (portamento will do a better job)
 void Application::midi_application ()
 {
   double delta_loop_cc_val = 0; 
