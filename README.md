@@ -101,7 +101,7 @@ Let's consider a Fade-in / Picth Variation / Fade-out sequence (I use right hand
  7. Rod antenna MIDI CC: 8 positions 
     (None, 8-Balance, 10-Pan, 16-MSB/48-LSB-GeneralPurpose-1, 17-MSB/49-LSB-GeneralPurpose-2, 18-GeneralPurpose-3, 19-GeneralPurpose-4, 74-cutoff) 
     
-    For 14 Bit CC messages, 2 bytes are always sent in the following order: MSB (1st), LSB (2nd) as per MIDI 1.0 Standard. 
+    For 14 Bit CC messages, MSB and LSB are always sent together and in the following order: MSB (1st), LSB (2nd) as per MIDI 1.0 Standard. 
     The receiver can bufferize MSB to synchronize it with the LSB. 
     
  8. Loop antenna MIDI CC: 8 positions 
