@@ -542,6 +542,7 @@ void Application::midi_msg_send(uint8_t channel, uint8_t midi_cmd1, uint8_t midi
 // Calibrate pitch bend and other parameters accordingly to the receiver synth (see midi_calibrate). 
 // New notes won't be generated as long as pitch bend will do the job. 
 // The bigger is synth's pitch bend range the beter is the effect.  
+// If pitch bend range = 1 no picth bend is generated (portamento will do a better job)
 void Application::midi_application ()
 {
   double delta_loop_cc_val = 0; 
@@ -600,11 +601,11 @@ void Application::midi_application ()
     {
       if (rod_midi_cc != 255) 
       {
+        midi_msg_send(midi_channel, 0xB0, rod_midi_cc, (uint8_t)(new_midi_rod_cc_val >> 7));
         if (rod_midi_cc_lo != 255)
         {
           midi_msg_send(midi_channel, 0xB0, rod_midi_cc_lo, (uint8_t)(new_midi_rod_cc_val & 0x007F)); 
         }
-        midi_msg_send(midi_channel, 0xB0, rod_midi_cc, (uint8_t)(new_midi_rod_cc_val >> 7));
       }
       old_midi_rod_cc_val = new_midi_rod_cc_val;
     }
@@ -668,11 +669,11 @@ void Application::midi_application ()
     {
       if (rod_midi_cc != 255) 
       {
+        midi_msg_send(midi_channel, 0xB0, rod_midi_cc, (uint8_t)(new_midi_rod_cc_val >> 7));
         if (rod_midi_cc_lo != 255)
         {
           midi_msg_send(midi_channel, 0xB0, rod_midi_cc_lo, (uint8_t)(new_midi_rod_cc_val & 0x007F)); 
         }
-        midi_msg_send(midi_channel, 0xB0, rod_midi_cc, (uint8_t)(new_midi_rod_cc_val >> 7));
       }
       old_midi_rod_cc_val = new_midi_rod_cc_val;
     }
