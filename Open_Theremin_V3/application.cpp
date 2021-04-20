@@ -600,11 +600,11 @@ void Application::midi_application ()
     {
       if (rod_midi_cc != 255) 
       {
+        midi_msg_send(midi_channel, 0xB0, rod_midi_cc, (uint8_t)(new_midi_rod_cc_val >> 7));
         if (rod_midi_cc_lo != 255)
         {
           midi_msg_send(midi_channel, 0xB0, rod_midi_cc_lo, (uint8_t)(new_midi_rod_cc_val & 0x007F)); 
         }
-        midi_msg_send(midi_channel, 0xB0, rod_midi_cc, (uint8_t)(new_midi_rod_cc_val >> 7));
       }
       old_midi_rod_cc_val = new_midi_rod_cc_val;
     }
@@ -668,11 +668,11 @@ void Application::midi_application ()
     {
       if (rod_midi_cc != 255) 
       {
+        midi_msg_send(midi_channel, 0xB0, rod_midi_cc, (uint8_t)(new_midi_rod_cc_val >> 7));
         if (rod_midi_cc_lo != 255)
         {
           midi_msg_send(midi_channel, 0xB0, rod_midi_cc_lo, (uint8_t)(new_midi_rod_cc_val & 0x007F)); 
         }
-        midi_msg_send(midi_channel, 0xB0, rod_midi_cc, (uint8_t)(new_midi_rod_cc_val >> 7));
       }
       old_midi_rod_cc_val = new_midi_rod_cc_val;
     }
