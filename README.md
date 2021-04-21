@@ -4,7 +4,7 @@
 Based on Arduino UNO Software for the Open.Theremin version 3.0  Copyright (C) 2010-2016 by Urs Gaudenz
 https://github.com/GaudiLabs/OpenTheremin_V3
 
-This Open Theremin V3 with MIDI version V2.5 also takes into account 
+This Open Theremin V3 with MIDI version V2.6 also takes into account 
 Changes added in Open.Theremin version 3.1 (all by @Theremingenieur):
 
     Fix a wavetable addressing issue (found by @miguelfreitas)
