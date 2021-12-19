@@ -918,42 +918,42 @@ void Application::set_parameters ()
       case 0:
         rod_midi_cc = 255; // Nothing
         rod_midi_cc_lo = 255; // Nothing
-        rod_cc_scale = 1;
+        rod_cc_scale = 1.0;
         break; 
       case 1:
         rod_midi_cc = 8; // Balance
         rod_midi_cc_lo = 255; // No least significant bits
-        rod_cc_scale = 1.74;
+        rod_cc_scale = 1.0;
        break; 
       case 2:
         rod_midi_cc = 10; // Pan
         rod_midi_cc_lo = 255; // No least significant bits
-        rod_cc_scale = 1.74;
+        rod_cc_scale = 1.0;
         break; 
       case 3:
         rod_midi_cc = 16; // General Purpose 1 (14 Bits)
         rod_midi_cc_lo = 48; // General Purpose 1 least significant bits
-        rod_cc_scale = 1;
+        rod_cc_scale = 1.0;
         break; 
       case 4:
         rod_midi_cc = 17; // General Purpose 2 (14 Bits)
         rod_midi_cc_lo = 49; // General Purpose 2 least significant bits
-        rod_cc_scale = 1.74;
+        rod_cc_scale = 1.0;
         break; 
       case 5:
         rod_midi_cc = 18; // General Purpose 3 (7 Bits)
         rod_midi_cc_lo = 255; // No least significant bits
-        rod_cc_scale = 1;
+        rod_cc_scale = 1.0;
         break; 
       case 6:
         rod_midi_cc = 19; // General Purpose 4 (7 Bits)
         rod_midi_cc_lo = 255; // No least significant bits
-        rod_cc_scale = 1.74;
+        rod_cc_scale = 1.0;
         break; 
       default:
         rod_midi_cc = 74; // Cutoff (exists of both loop and rod)
         rod_midi_cc_lo = 255; // No least significant bits
-        rod_cc_scale = 1.74;
+        rod_cc_scale = 1.0;
         break; 
       }
       break;
