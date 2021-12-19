@@ -580,7 +580,7 @@ void Application::midi_application ()
   }
   
   // Calculate rod antena cc value for midi 
-  new_midi_rod_cc_val = round (min(((double_log_freq * 128) * rod_cc_scale), 16383); // 14 bit value !
+  new_midi_rod_cc_val = round (min(((double_log_freq * 128) * rod_cc_scale), 16383)); // 14 bit value !
 
   // State machine for MIDI
   switch (_midistate)
