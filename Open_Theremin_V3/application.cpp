@@ -537,7 +537,7 @@ void Application::delay_NOP(unsigned long time) {
 void Application::midi_setup() 
 {
   // Set MIDI baud rate:
-  Serial.begin(115200); // Baudrate for midi to serial. Use a serial to midi router http://projectgus.github.com/hairless-midiserial/
+  Serial.begin(115200); // Baudrate for midi to serial. Use a serial to midi router https://github.com/projectgus/hairless-midiserial
   //Serial.begin(31250); // Baudrate for real midi. Use din connection https://www.arduino.cc/en/Tutorial/Midi or HIDUINO https://github.com/ddiakopoulos/hiduino
 
   _midistate = MIDI_SILENT; 
