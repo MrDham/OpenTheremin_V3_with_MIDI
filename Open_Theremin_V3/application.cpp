@@ -57,6 +57,8 @@ static uint8_t flag_pitch_bend_on = 1;
 static uint8_t loop_midi_cc = 7;
 static uint8_t rod_midi_cc = 255; 
 static uint8_t rod_midi_cc_lo = 255; 
+static double rod_cc_scale = 1;
+
 
 // tweakable paramameters
 #define VELOCITY_SENS  9 // How easy it is to reach highest velocity (127). Something betwen 5 and 12.
@@ -578,7 +580,7 @@ void Application::midi_application ()
   }
   
   // Calculate rod antena cc value for midi 
-  new_midi_rod_cc_val = round (double_log_freq * 128); // 14 bit value !
+  new_midi_rod_cc_val = round (min(((double_log_freq * 128) * rod_cc_scale), 16383)); // 14 bit value !
 
   // State machine for MIDI
   switch (_midistate)
@@ -916,34 +918,42 @@ void Application::set_parameters ()
       case 0:
         rod_midi_cc = 255; // Nothing
         rod_midi_cc_lo = 255; // Nothing
+        rod_cc_scale = 1.0;
         break; 
       case 1:
         rod_midi_cc = 8; // Balance
         rod_midi_cc_lo = 255; // No least significant bits
-        break; 
+        rod_cc_scale = 1.0;
+       break; 
       case 2:
         rod_midi_cc = 10; // Pan
         rod_midi_cc_lo = 255; // No least significant bits
+        rod_cc_scale = 1.0;
         break; 
       case 3:
         rod_midi_cc = 16; // General Purpose 1 (14 Bits)
         rod_midi_cc_lo = 48; // General Purpose 1 least significant bits
+        rod_cc_scale = 1.0;
         break; 
       case 4:
         rod_midi_cc = 17; // General Purpose 2 (14 Bits)
         rod_midi_cc_lo = 49; // General Purpose 2 least significant bits
+        rod_cc_scale = 1.0;
         break; 
       case 5:
         rod_midi_cc = 18; // General Purpose 3 (7 Bits)
         rod_midi_cc_lo = 255; // No least significant bits
+        rod_cc_scale = 1.0;
         break; 
       case 6:
         rod_midi_cc = 19; // General Purpose 4 (7 Bits)
         rod_midi_cc_lo = 255; // No least significant bits
+        rod_cc_scale = 1.0;
         break; 
       default:
         rod_midi_cc = 74; // Cutoff (exists of both loop and rod)
         rod_midi_cc_lo = 255; // No least significant bits
+        rod_cc_scale = 1.0;
         break; 
       }
       break;
