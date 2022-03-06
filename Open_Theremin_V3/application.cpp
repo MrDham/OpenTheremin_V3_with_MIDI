@@ -364,6 +364,9 @@ static long pitchfn1 = 0;
 static long pitchfn = 0;
 
 
+  // limit the number of calibration iteration to 12 
+  // the algorythm used is normaly faster than dichotomy which normaly finds a 12Bit number in 12 iterations max
+  static uint16_t l_iteration_pitch = 0;
   
   InitialisePitchMeasurement();
   interrupts();
@@ -391,8 +394,10 @@ delay(100);
 pitchfn1 = GetPitchMeasurement();
 
  
-while(abs(pitchfn0-pitchfn1)>CalibrationTolerance){      // max allowed pitch frequency offset
-
+l_iteration_pitch = 0;
+while ((abs(pitchfn0 - pitchfn1) > CalibrationTolerance) && (l_iteration_pitch < 12))
+{      
+      
 SPImcpDAC2Asend(pitchXn0);
 delay(100);
 pitchfn0 = GetPitchMeasurement()-pitchfn;
@@ -403,15 +408,15 @@ pitchfn1 = GetPitchMeasurement()-pitchfn;
 
 pitchXn2=pitchXn1-((pitchXn1-pitchXn0)*pitchfn1)/(pitchfn1-pitchfn0); // new DAC value
 
-delay(100);
-
 
 pitchXn0 = pitchXn1;
 pitchXn1 = pitchXn2;
 
 HW_LED2_TOGGLE;
-
+      
+l_iteration_pitch ++;
 }
+      
 delay(100);
 
 EEPROM.put(0,pitchXn0);
@@ -430,6 +435,9 @@ static long volumefn0 = 0;
 static long volumefn1 = 0;
 static long volumefn = 0;
 
+  // limit the number of calibration iteration to 12 
+  // the algorythm used is normaly faster than dichotomy which normaly finds a 12Bit number in 12 iterations max
+  static uint16_t l_iteration_volume = 0; 
     
   InitialiseVolumeMeasurement();
   interrupts();
@@ -456,7 +464,9 @@ volumefn1 = GetVolumeMeasurement();
 
 
 
-while(abs(volumefn0-volumefn1)>CalibrationTolerance){
+l_iteration_volume = 0;
+while ((abs(volumefn0 - volumefn1) > CalibrationTolerance) && (l_iteration_volume < 12))
+{
 
 SPImcpDAC2Bsend(volumeXn0);
 delay_NOP(44316);//44316=100ms
@@ -468,12 +478,13 @@ volumefn1 = GetVolumeMeasurement()-volumefn;
 
 volumeXn2=volumeXn1-((volumeXn1-volumeXn0)*volumefn1)/(volumefn1-volumefn0); // calculate new DAC value
 
-delay_NOP(44316);//44316=100ms
 
 volumeXn0 = volumeXn1;
 volumeXn1 = volumeXn2;
+
 HW_LED2_TOGGLE;
 
+l_iteration_volume ++;
 }
 
 EEPROM.put(2,volumeXn0);
