@@ -813,9 +813,12 @@ void Application::calculate_note_bend ()
 void Application::init_parameters ()
 {
   // init data pot value to avoid 1st position to be taken into account
+
+  param_pot_value = analogRead(REGISTER_SELECT_POT);
+  old_param_pot_value = param_pot_value;
+
   data_pot_value = analogRead(WAVE_SELECT_POT);
   old_data_pot_value = data_pot_value;
-  
 }
 
 void Application::set_parameters ()
