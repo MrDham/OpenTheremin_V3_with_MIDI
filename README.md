@@ -1,4 +1,4 @@
-## Open Theremin V3 with MIDI interface control software V2.7 for Arduino UNO
+## Open Theremin V3 with MIDI interface control software V2.7.1 for Arduino UNO
 (For Open Theremin V4 with MIDI, follow this link: https://github.com/MrDham/OpenTheremin_V4_with_MIDI)
 
 
