@@ -604,7 +604,10 @@ void Application::midi_application ()
     // Always refresh midi loop antena cc. 
     if (new_midi_loop_cc_val != old_midi_loop_cc_val)
     {
-      midi_msg_send(midi_channel, 0xB0, loop_midi_cc, new_midi_loop_cc_val);
+      if (loop_midi_cc < 128)
+      {
+        midi_msg_send(midi_channel, 0xB0, loop_midi_cc, new_midi_loop_cc_val);
+      }
       old_midi_loop_cc_val = new_midi_loop_cc_val;
     }
     else
@@ -615,10 +618,10 @@ void Application::midi_application ()
     // Always refresh midi rod antena cc if applicable. 
     if (new_midi_rod_cc_val != old_midi_rod_cc_val)
     {
-      if (rod_midi_cc != 255) 
+      if (rod_midi_cc < 128) 
       {
         midi_msg_send(midi_channel, 0xB0, rod_midi_cc, (uint8_t)(new_midi_rod_cc_val >> 7));
-        if (rod_midi_cc_lo != 255)
+        if (rod_midi_cc_lo < 128)
         {
           midi_msg_send(midi_channel, 0xB0, rod_midi_cc_lo, (uint8_t)(new_midi_rod_cc_val & 0x007F)); 
         }
@@ -672,7 +675,10 @@ void Application::midi_application ()
     // Always refresh midi loop antena cc. 
     if (new_midi_loop_cc_val != old_midi_loop_cc_val)
     {
-      midi_msg_send(midi_channel, 0xB0, loop_midi_cc, new_midi_loop_cc_val);
+      if (loop_midi_cc < 128)
+      {
+        midi_msg_send(midi_channel, 0xB0, loop_midi_cc, new_midi_loop_cc_val);
+      }
       old_midi_loop_cc_val = new_midi_loop_cc_val;
     }
     else
@@ -683,10 +689,10 @@ void Application::midi_application ()
     // Always refresh midi rod antena cc if applicable. 
     if (new_midi_rod_cc_val != old_midi_rod_cc_val)
     {
-      if (rod_midi_cc != 255) 
+      if (rod_midi_cc < 128) 
       {
         midi_msg_send(midi_channel, 0xB0, rod_midi_cc, (uint8_t)(new_midi_rod_cc_val >> 7));
-        if (rod_midi_cc_lo != 255)
+        if (rod_midi_cc_lo < 128)
         {
           midi_msg_send(midi_channel, 0xB0, rod_midi_cc_lo, (uint8_t)(new_midi_rod_cc_val & 0x007F)); 
         }
