@@ -168,8 +168,10 @@ Changing this to your taste may require some test and trial.
 "#define PLAYER_ACCURACY  0.2"  -> Pitch accuracy of player. Tolerance on note center for changing notes when playing legato. From 0 (very accurate players) to 0.5 (may generate note toggling). 
 
 ### NEED SUPPORT ?
-Send an e-mail at support.mr-dham@orange.fr
-I'll try to answer you if I can. 
+Please log bugs, requests and questions at https://github.com/MrDham/OpenTheremin_V3_with_MIDI/issues
+
+### Any questions about MIDI and theremins ?
+The answer is probably there: https://app.box.com/s/s3yx1ro1v8ay061626wy09vmbo7do23q 
 
 
 ### LICENSE
