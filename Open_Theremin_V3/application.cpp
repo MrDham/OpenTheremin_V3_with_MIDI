@@ -42,8 +42,8 @@ static uint16_t old_midi_bend = 0;
 static uint8_t midi_bend_low; 
 static uint8_t midi_bend_high;
 
-static double double_log_freq = 0;
-static double midi_key_follow = 0.5;
+static uint32_t long_log_note = 0;
+static uint32_t midi_key_follow = 2048; ;
       
 // Configuration parameters
 static uint8_t registerValue = 2;
@@ -57,12 +57,12 @@ static uint8_t flag_pitch_bend_on = 1;
 static uint8_t loop_midi_cc = 7;
 static uint8_t rod_midi_cc = 255; 
 static uint8_t rod_midi_cc_lo = 255; 
-static double rod_cc_scale = 1;
+static uint32_t rod_cc_scale = 128;
 
 
 // tweakable paramameters
 #define VELOCITY_SENS  9 // How easy it is to reach highest velocity (127). Something betwen 5 and 12.
-#define PLAYER_ACCURACY  0.2 // between 0 (very accurate players) and 0.5 (not accurate at all)
+#define PLAYER_ACCURACY  819 // between 0 (very accurate players) and 2048 (not accurate at all)
 
 static uint16_t data_pot_value = 0; 
 static uint16_t old_data_pot_value = 0; 
@@ -496,6 +496,76 @@ EEPROM.put(2,volumeXn0);
 
 }
 
+// calculate log2 of an unsigned from 1 to 65535 into a 4.12 fixed point unsigned
+// To avoid use of log (double) function
+uint16_t Application::log2U16 (uint16_t lin_input)
+{
+  uint32_t long_lin; // To turn input into a 16.16 fixed point
+  //unsigned long bit_pos;
+  uint32_t log_output; // 4.12 fixed point log calculation
+
+  int32_t long_x1;
+  int32_t long_x2;
+  int32_t long_x3;
+
+  const int32_t POLY_A0 = 37;  
+  const int32_t POLY_A1 = 46390; 
+  const int32_t POLY_A2 = -18778; 
+  const int32_t POLY_A3 = 5155; 
+
+
+  if (lin_input != 0)
+  {    
+    long_lin = (uint32_t) (lin_input) << 16; 
+    log_output = 0; 
+
+    // Calculate integer part of log2 and reduce long_lin into 16.16 between 1 and 2
+    if (long_lin >= 16777216) // 2^(8 + 16)
+    {
+      log_output += 8 << 12;
+      long_lin = long_lin  >> 8;        
+    }
+
+    if (long_lin >= 1048576) // 2^(4 + 16)
+    {
+      log_output += 4 << 12;
+      long_lin = long_lin  >> 4;        
+    }
+
+    if (long_lin >= 262144) // 2^(2 + 16)
+    {
+      log_output += 2 << 12;
+      long_lin = long_lin  >> 2;        
+    }
+
+    if (long_lin >= 131072) // 2^(1 + 16)
+    {
+      log_output += 1 << 12;
+      long_lin = long_lin  >> 1;        
+    }
+
+    // long_lin is between 1 and 2 now (16.16 fixed point)
+    // Calculate 3rd degree polynomial approximation log(x)=Polynomial(x-1) in signed long s15.16 and reduce to unsigned 4.12 at the very end. 
+
+    long_lin = long_lin >> 1; // reduce to 17.15 bit to support signed operations here after
+
+    long_x1 = long_lin-(32768); //(x-1) we have the decimal part in s15 now
+    long_x2 = (long_x1 * long_x1) >> 15 ; // (x-1)^2
+    long_x3 = (long_x2 * long_x1) >> 15 ; // (x-1)^3
+
+    log_output += ( (POLY_A0) 
+                  + ((POLY_A1 * long_x1) >> 15) 
+                  + ((POLY_A2 * long_x2) >> 15) 
+                  + ((POLY_A3 * long_x3) >> 15)  ) >> 3;
+  }
+  else
+  {
+    log_output=0; 
+  }
+
+  return log_output; 
+}
+
 void Application::hzToAddVal(float hz) {
   setWavetableSampleAdvance((uint16_t)(hz * HZ_ADDVAL_FACTOR));
 }
@@ -561,41 +631,42 @@ void Application::midi_msg_send(uint8_t channel, uint8_t midi_cmd1, uint8_t midi
 // The bigger is synth's pitch bend range the beter is the effect.  
 void Application::midi_application ()
 {
-  double delta_loop_cc_val = 0; 
-  double calculated_velocity = 0;
-  
+  int16_t delta_loop_cc_val = 0; 
+  int16_t calculated_velocity = 0;  
   
   // Calculate loop antena cc value for midi 
   new_midi_loop_cc_val = loop_hand_pos >> 1; 
   new_midi_loop_cc_val = min (new_midi_loop_cc_val, 127);
-  delta_loop_cc_val = (double)new_midi_loop_cc_val - (double)old_midi_loop_cc_val;
+  delta_loop_cc_val = (int16_t)new_midi_loop_cc_val - (int16_t)old_midi_loop_cc_val;
 
   // Calculate log freq 
   if ((vPointerIncrement < 18) || (vPointerIncrement > 65518)) 
   {
     // Lowest note
-    double_log_freq = 0; 
+    long_log_note = 0;
   }
   else if ((vPointerIncrement > 26315) && (vPointerIncrement < 39221))
   {
     // Highest note
-    double_log_freq = 127; 
+    long_log_note = 127; 
   }
   else if (vPointerIncrement < 32768)
   {
     // Positive frequencies
     // Find note in the playing range
-    double_log_freq = (log (vPointerIncrement/17.152) / 0.057762265); // Precise note played in the logaritmic scale
+    // 16795 = log2U16 (C0 [8.1758] * HZ_ADDVAL_FACTOR [2.09785])
+    long_log_note = 12 * ((uint32_t) log2U16(vPointerIncrement) - 16795); // Precise note played in the logaritmic scale
   }
   else
   {
     // Negative frequencies
     // Find note in the playing range
-    double_log_freq = (log ((65535-vPointerIncrement+1)/17.152) / 0.057762265); // Precise note played in the logaritmic scale
+    // 16795 = log2U16 (C0 [8.1758] * HZ_ADDVAL_FACTOR [2.09785])
+    long_log_note = 12 * ((uint32_t) log2U16(65535-vPointerIncrement+1) - 16795); // Precise note played in the logaritmic scale
   }
   
   // Calculate rod antena cc value for midi 
-  new_midi_rod_cc_val = round (min(((double_log_freq * 128) * rod_cc_scale), 16383)); // 14 bit value !
+  new_midi_rod_cc_val = (uint16_t) min((long_log_note * rod_cc_scale) >> 12, 16383); // 14 bit value
 
   // State machine for MIDI
   switch (_midistate)
@@ -637,7 +708,7 @@ void Application::midi_application ()
     if (new_midi_loop_cc_val > midi_volume_trigger)
     {
       // Set key follow to the minimum in order to use closest note played as the center note 
-      midi_key_follow = 0.5;
+      midi_key_follow = 2048;
 
       // Calculate note and associated pitch bend 
       calculate_note_bend ();
@@ -649,8 +720,8 @@ void Application::midi_application ()
       // Calculate velocity
       if (midi_timer != 0)
       {
-        calculated_velocity = (64 * (127 - (double)midi_volume_trigger) / 127) + (VELOCITY_SENS * (double)midi_volume_trigger * delta_loop_cc_val / (double)midi_timer);
-        midi_velocity = min (round (abs (calculated_velocity)), 127);
+        calculated_velocity = ((127 - midi_volume_trigger) >> 1 ) + (VELOCITY_SENS * midi_volume_trigger * delta_loop_cc_val / midi_timer);
+        midi_velocity = min (abs (calculated_velocity), 127);
       }
       else 
       {
@@ -710,12 +781,12 @@ void Application::midi_application ()
       if ( flag_legato_on == 1)
       {
         // Set key follow so as next played note will be at limit of pitch bend range
-        midi_key_follow = (double)(midi_bend_range) - PLAYER_ACCURACY;
+        midi_key_follow = ((uint32_t) midi_bend_range * 4096) - PLAYER_ACCURACY;
       }
       else
       {
         // Set key follow to max so as no key follows
-        midi_key_follow = 127;
+        midi_key_follow = 520192; // 127*2^12
       }
 
       // Calculate note and associated pitch bend 
@@ -771,16 +842,16 @@ void Application::midi_application ()
 
 void Application::calculate_note_bend ()
 {
-  double double_log_bend;
-  double double_norm_log_bend;
+  int32_t long_log_bend;
+  int32_t long_norm_log_bend;
     
-  double_log_bend = double_log_freq - old_midi_note; // How far from last played midi chromatic note we are
+  long_log_bend = ((int32_t)long_log_note) - (((int32_t) old_midi_note) * 4096); // How far from last played midi chromatic note we are 
 
   // If too much far from last midi chromatic note played (midi_key_follow depends on pitch bend range)
-  if ((abs (double_log_bend) >= midi_key_follow) && (midi_key_follow != 127))
+  if ((abs (long_log_bend) >= midi_key_follow) && (midi_key_follow != 520192))
   {
-    new_midi_note = round (double_log_freq);  // Select the new midi chromatic note 
-    double_log_bend = double_log_freq - new_midi_note; // calculate bend to reach precise note played
+    new_midi_note = (uint8_t) ((long_log_note + 2048) >> 12);  // Select the new midi chromatic note - round to integer part by adding 1/2 before shifting
+    long_log_bend = ((int32_t) long_log_note) - (((int32_t) new_midi_note) * 4096); // calculate bend to reach precise note played
   }
   else
   {
@@ -791,16 +862,16 @@ void Application::calculate_note_bend ()
   if (flag_pitch_bend_on == 1)
   {
     // use it to reach precise note played
-    double_norm_log_bend = (double_log_bend / midi_bend_range);
-    if (double_norm_log_bend > 1)
+    long_norm_log_bend = (long_log_bend / midi_bend_range);
+    if (long_norm_log_bend > 4096)
     {
-      double_norm_log_bend = 1; 
+      long_norm_log_bend = 4096; 
     }
-    else if (double_norm_log_bend < -1)
+    else if (long_norm_log_bend < -4096)
     {
-      double_norm_log_bend = -1;
+      long_norm_log_bend = -4096; 
     }
-    new_midi_bend = 8192 + (8191 * double_norm_log_bend); // Calculate midi pitch bend
+    new_midi_bend = 8192 + ((long_norm_log_bend * 8191) >> 12); // Calculate midi pitch bend
   }
   else
   {
@@ -968,42 +1039,42 @@ void Application::set_parameters ()
       case 0:
         rod_midi_cc = 255; // Nothing
         rod_midi_cc_lo = 255; // Nothing
-        rod_cc_scale = 1.0;
+        rod_cc_scale = 128;
         break; 
       case 1:
         rod_midi_cc = 8; // Balance
         rod_midi_cc_lo = 255; // No least significant bits
-        rod_cc_scale = 1.0;
+        rod_cc_scale = 128;
         break; 
       case 2:
         rod_midi_cc = 10; // Pan
         rod_midi_cc_lo = 255; // No least significant bits
-        rod_cc_scale = 1.0;
+        rod_cc_scale = 128;
         break; 
       case 3:
         rod_midi_cc = 16; // General Purpose 1 (14 Bits)
         rod_midi_cc_lo = 48; // General Purpose 1 least significant bits
-        rod_cc_scale = 1.0;
+        rod_cc_scale = 128;
         break; 
       case 4:
         rod_midi_cc = 17; // General Purpose 2 (14 Bits)
         rod_midi_cc_lo = 49; // General Purpose 2 least significant bits
-        rod_cc_scale = 1.0;
+        rod_cc_scale = 128;
         break; 
       case 5:
         rod_midi_cc = 18; // General Purpose 3 (7 Bits)
         rod_midi_cc_lo = 255; // No least significant bits
-        rod_cc_scale = 1.0;
+        rod_cc_scale = 128;
         break; 
       case 6:
         rod_midi_cc = 19; // General Purpose 4 (7 Bits)
         rod_midi_cc_lo = 255; // No least significant bits
-        rod_cc_scale = 1.0;
+        rod_cc_scale = 128;
         break; 
       default:
         rod_midi_cc = 74; // Cutoff (exists of both loop and rod)
         rod_midi_cc_lo = 255; // No least significant bits
-        rod_cc_scale = 1.0;
+        rod_cc_scale = 128;
         break; 
       }
       break;
