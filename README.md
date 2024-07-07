@@ -1,4 +1,4 @@
-## Open Theremin V3 with MIDI interface control software V2.8 for Arduino UNO
+## Open Theremin V3 with MIDI interface control software V2.9 for Arduino UNO
 (For Open Theremin V4 with MIDI, follow this link: https://github.com/MrDham/OpenTheremin_V4_with_MIDI)
 
 
@@ -7,7 +7,7 @@
 Based on Arduino UNO Software for the Open.Theremin version 3.0  Copyright (C) 2010-2016 by Urs Gaudenz
 https://github.com/GaudiLabs/OpenTheremin_V3
 
-This Open Theremin V3 with MIDI version V2.6 also takes into account 
+This Open Theremin V3 with MIDI, since version V2.6, also takes into account 
 Changes added in Open.Theremin version 3.1 (all by @Theremingenieur):
 
     Fix a wavetable addressing issue (found by @miguelfreitas)
@@ -65,7 +65,7 @@ The MIDI open theremin generates NOTE ON/OFF messages and  Continuous Controler 
 
 MIDI CC: 
 
-It is possible to affect independant MIDI CCs to the PITCH ANTENNA (ROD) and to the VOLUME ANTENNA (LOOP).  
+It is possible to assign independant MIDI CCs to the PITCH ANTENNA (ROD) and to the VOLUME ANTENNA (LOOP).  
 
 NOTE ON/OFF: 
 
@@ -165,7 +165,7 @@ Changing this to your taste may require some test and trial.
 
 "#define VELOCITY_SENS  9" -> How easy it is to reach highest velocity (127). Something betwen 5 and 12.  
 
-"#define PLAYER_ACCURACY  0.2"  -> Pitch accuracy of player. Tolerance on note center for changing notes when playing legato. From 0 (very accurate players) to 0.5 (may generate note toggling). 
+"#define PLAYER_ACCURACY  819"  -> Pitch accuracy of player. Tolerance on note center for changing notes when playing legato. From 0 (very accurate players) to 2048 (may generate note toggling). 
 
 ### NEED SUPPORT ?
 Please log bugs, requests and questions at https://github.com/MrDham/OpenTheremin_V3_with_MIDI/issues
