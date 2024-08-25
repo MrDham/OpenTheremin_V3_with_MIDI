@@ -58,6 +58,7 @@ class Application {
     const float MIDDLE_C = 261.6;
 
     void playNote(float hz, uint16_t milliseconds, uint8_t volume);
+    uint16_t log2U16 (uint16_t lin_input);
     void hzToAddVal(float hz);
     void playStartupSound();
     void playCalibratingCountdownSound();
